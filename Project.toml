@@ -3,6 +3,11 @@ uuid = "dbb3e41c-1b9d-4a1b-8410-0a24a4c352c0"
 authors = ["Laura Brustenga i Moncusí <brust@math.ku.dk> and contributors"]
 version = "0.1.0"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Nemo = "2edaba10-b0f1-5616-af89-8c11ac63239a"
+Polymake = "d720cf60-89b5-51f5-aff5-213f193123e7"
+
 [compat]
 julia = "1"
 
