@@ -1,0 +1,13 @@
+name = "CRNT"
+uuid = "dbb3e41c-1b9d-4a1b-8410-0a24a4c352c0"
+authors = ["Laura Brustenga i Moncusí <brust@math.ku.dk> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
