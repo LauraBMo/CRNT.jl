@@ -51,4 +51,7 @@ function NonnegativeNullspaceCone(N::AbstractMatrix{T}) where {T<:Integer}
     ## Return the intersection as a Base.Array matrix of integers
     return T.(transpose(Array(d)))
 end
+
+include("TypesCompatibilites.jl")
+
 end
