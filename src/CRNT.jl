@@ -42,12 +42,12 @@ function NonnegativeNullspaceCone(N::AbstractMatrix{T}) where {T<:Integer}
     rays1 = transpose(hcat(nullsp,-nullsp))
     c1 = Polymake.polytope.Cone(INPUT_RAYS=rays1)
     ## The nonnegative orthant as a cone
-    rays2 = Matrix{T}(LinearAlgebra.I, size(N,2), size(N,2))
+    rays2 = Matrix{T}(I, size(N,2), size(N,2))
     c2 = Polymake.polytope.Cone(INPUT_RAYS=rays2)
     ## Compute intersection of c1 c2 and save RAYS
     d = Polymake.polytope.intersection(c1,c2).RAYS
     ## Convert to integers
-    # d = Polymake.@convert_to Matrix{Integer} d
+    d = Polymake.@convert_to Matrix{Integer} d
     ## Return the intersection as a Base.Array matrix of integers
     return T.(transpose(Array(d)))
 end
