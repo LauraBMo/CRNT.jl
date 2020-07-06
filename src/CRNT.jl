@@ -19,7 +19,7 @@ Return a matrix whose columns generate the cone
 intersection of the nonnegative orthant and the nullsapce of `N`.
 
 # Examples
-```jldoctest
+```jldoctest; setup = :(using CRNT)
 julia> NonnegativeNullspaceCone([0 0; 0 0])
 2×2 Array{Int64,2}:
  1  0
