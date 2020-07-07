@@ -54,5 +54,6 @@ function NonnegativeNullspaceCone(N::AbstractMatrix{T}) where {T<:Integer}
 end
 
 include("TypesCompatibilites.jl")
+include("NemoMatrices.jl")
 
 end
