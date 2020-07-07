@@ -55,5 +55,6 @@ end
 
 include("TypesCompatibilites.jl")
 include("NemoMatrices.jl")
+include("StoichiometricMatrices.jl")
 
 end
