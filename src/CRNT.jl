@@ -9,14 +9,12 @@ import Nemo # matrix, FlintIntegerRing, nullspace
 import Polymake # polytope.cone,intersection
 import LinearAlgebra: I, dot
 
-using DocStringExtensions
-
 ## Nemo: matrix, FlintZZ, nullspace
 ## Polymake: polytope:cone,intersection
 ## LinearAlgebra: I
 """
 
-$(SIGNATURES)
+    NonnegativeNullspaceCone(N::AbstractMatrix{T}) where {T<:Integer}
 
 Return a matrix whose columns generate the cone
 intersection of the nonnegative orthant and the nullsapce of `N`.
