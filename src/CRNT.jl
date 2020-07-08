@@ -8,6 +8,7 @@ import PolynomialRoots: roots
 
 include("Cones.jl")
 include("ConvexParameters.jl")
+include("Stability.jl")
 include("TypesCompatibilites.jl")
 include("NemoMatrices.jl")
 include("StoichiometricMatrices.jl")
