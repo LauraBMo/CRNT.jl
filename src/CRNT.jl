@@ -6,6 +6,7 @@ export NonnegativeNullspaceCone
 
 # We need Nemo for the kernel of N1
 using Nemo # matrix, FlintIntegerRing, nullspace
+using AbstractAlgebra: Ring
 import Polymake # polytope.cone,intersection
 import LinearAlgebra: I, dot
 
