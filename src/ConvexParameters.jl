@@ -20,9 +20,9 @@ function JacobianConvexparameters(S::Ring,
 end
 
 function CharpolyCoeff(R::Ring, M::MatElem, ncoeff::Integer)
-    P, x = PolynomialRing(R, "x")
+    P, x = Nemo.PolynomialRing(R, "x")
     # q = coeff(divexact(charpoly(P,Jhl),x^mindeg),0);
-    return coeff(charpoly(P, M), ncoeff)
+    return Nemo.coeff(charpoly(P, M), ncoeff)
 end
 
 function JacobianDeterminantConvexparameters(R::Ring,
