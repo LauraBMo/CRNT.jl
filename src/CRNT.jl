@@ -9,6 +9,7 @@ using Nemo # matrix, FlintIntegerRing, nullspace
 import AbstractAlgebra: Ring
 import Polymake # polytope.cone,intersection
 import LinearAlgebra: I, dot
+import PolynomialRoots: roots
 
 ## Nemo: matrix, FlintZZ, nullspace
 ## Polymake: polytope:cone,intersection
