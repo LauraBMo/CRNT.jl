@@ -1,4 +1,3 @@
-
 export Diagonal, Jacobian
 
 """
@@ -7,7 +6,7 @@ export Diagonal, Jacobian
 
 Given a Julia vector `V` of entries, construct the corresponding AbstractAlgebra.jl one-column matrix over the given ring `R`, assuming all the entries can be coerced into `R`.
 """
-function Nemo.matrix(R, V::AbstractVector{T}) where {T}
+function Nemo.matrix(R::Ring, V::AbstractVector)
     return Nemo.matrix(R, reshape(V, (:,1)))
 end
 
@@ -17,7 +16,7 @@ end
 
 Given a Julia vector `V` of entries, construct the corresponding AbstractAlgebra.jl diagonal matrix over the given ring `R`, assuming all the entries can be coerced into `R`.
 """
-function Diagonal(R, V::AbstractVector{T}) where {T}
+function Diagonal(R::Ring, V::AbstractVector{T}) where {T}
     n = size(V,1)
     D = Nemo.zero_matrix(R,n,n)
     for i in 1:n D[i,i] = V[i] end
@@ -27,9 +26,9 @@ end
 """
 
     Jacobian(R, M)
-    Jacobian(R, M, xs=1:length(Nemo.gens(R)))
+    Jacobian(R, M, vars=1:length(Nemo.gens(R)))
 
-Returns the Jacobian matrix of a one-column matrix of polynomials `M` with respect to the generators of `R` indexed by `xs`. When `xs` is omitted all the generators of `R` are used.
+Returns the Jacobian matrix of a one-column matrix of polynomials `M` with respect to the generators of `R` indexed by `vars`. When `vars` is omitted all the generators of `R` are used.
 
 # Examples
 ```jldoctest; setup = :(using CRNT)
@@ -50,12 +49,12 @@ julia> Jacobian(R,M)
 [    0      0  x4  0  0      0  2   0  k3]
 ```
 """
-function Jacobian(R, M, xs=1:length(Nemo.gens(R)))
+function Jacobian(R::Ring, M::MatElem{T}, vars=1:length(gens(R))) where {T<:RingElem}
     r, c = size(M)
     @assert c == 1
-    J = Nemo.zero_matrix(R, r, length(xs))
+    J = Nemo.zero_matrix(R, r, length(vars))
     for i in 1:r
-        for (j, k) in enumerate(xs)
+        for (j, k) in enumerate(vars)
             J[i,j] = Nemo.derivative(M[i,1], k)
         end
     end
