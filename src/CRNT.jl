@@ -10,5 +10,6 @@ include("Cones.jl")
 include("TypesCompatibilites.jl")
 include("NemoMatrices.jl")
 include("StoichiometricMatrices.jl")
+include("CollectAndFinding.jl")
 
 end
