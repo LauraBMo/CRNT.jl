@@ -31,7 +31,7 @@ end
 Returns the Jacobian matrix of a one-column matrix of polynomials `M` with respect to the generators of `R` indexed by `vars`. When `vars` is omitted all the generators of `R` are used.
 
 # Examples
-```jldoctest; setup = :(using CRNT)
+```jldoctest; setup = :(using CRNT, Nemo)
 julia> using Nemo
 
 julia> R, vars = PolynomialRing(ZZ, vcat(["k\$i" for i in 1:5], ["x\$i" for i in 1:4]));
@@ -49,7 +49,7 @@ julia> Jacobian(R,M)
 [    0      0  x4  0  0      0  2   0  k3]
 ```
 """
-function Jacobian(R::Ring, M::MatElem{T}, vars=1:length(gens(R))) where {T<:RingElem}
+function Jacobian(R::Ring, M::MatElem{T}, vars=1:length(Nemo.gens(R))) where {T<:RingElem}
     r, c = size(M)
     @assert c == 1
     J = Nemo.zero_matrix(R, r, length(vars))
