@@ -7,6 +7,7 @@ import LinearAlgebra: I, dot
 import PolynomialRoots: roots
 
 include("Cones.jl")
+include("ConvexParameters.jl")
 include("TypesCompatibilites.jl")
 include("NemoMatrices.jl")
 include("StoichiometricMatrices.jl")
