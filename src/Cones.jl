@@ -1,5 +1,9 @@
 
-export NonnegativeNullspaceCone
+export
+    NonnegativeNullspaceCone,
+    pRoots_qPossitive,
+    Newtonpolytope,
+    IntPointIncone
 
 ## Nemo: matrix, FlintZZ, nullspace
 ## Polymake: polytope:cone,intersection
@@ -45,13 +49,20 @@ function NonnegativeNullspaceCone(N::AbstractMatrix{T}) where {T<:Integer}
     return T.(transpose(Array(d)))
 end
 
-function NewtonPolytope(iter)
-    Points = CollectHomoiterInmatrows(iter)
-    return Polymake.polytope.Polytope(POINTS=Points)
+function Newtonpolytope(Exponents::AbstractMatrix, vertices=false)
+    return vertices ? Polymake.polytope.Polytope(VERTICES=Exponents) : Polymake.polytope.Polytope(POINTS=Exponents)
 end
 
-function NewtonPolytope(p::MPolyElem)
-    return NewtonPolytope(exponent_vectors(p))
+function Newtonpolytope(p)
+    Exponents = CollectExponent_homovectors(p)
+    return Newtonpolytope(Exponents)
+end
+
+macro NewtonpolytopeVertices(p)
+    P = Newtonpolytope(p)
+    println("Computing vertices of the Newton polytope $(string(p)), it may take some time.\n")
+    PV = Polymake.@convert_to Matrix{Integer} NPp.VERTICES[:,2:end]
+    return P, Int.(Array(PV))
 end
 
 ## Input:  polytope P, vertex v::Int.
@@ -62,56 +73,35 @@ function IntPointIncone(rays, lincoeff)
     return Int.(abs(lcm(denominator.(RatPoint)))*RatPoint)
 end
 
-function CollectallPossitiveRoots(p, inNormalCone, realtol::Real=1e-7)
-    ## Compute exponent of t (to know the minimum in case it is negative).
-    texponents = [dot(inNormalCone,exp) for exp in exponent_vectors(p)]
-    maxdeg = maximum(texponents)
-    mindeg = minimum(texponents)
-    ## If mindeg>0 we divide by t^(mindeg), otherwise we multiply.
-    ## Both correspond to shift by -mindeg!
-    poly = zeros(maxdeg-mindeg+1)
-    for (c,i) in zip(coeffs(p),texponents)
-        poly[i-mindeg+1] = c
-    end
-    # mindeg = findfirst(!=(0), poly)
-    # roots = PolynomialRoots.roots(BigFloat.(poly[mindeg:end]))
-    # roots = PolynomialRoots.roots(poly[mindeg:end])
-    roots = PolynomialRoots.roots(poly)
-    realposs = filter(>(0), real.(filter(x -> abs(imag(x))<realtol, proots)))
-    return [t.^inNormalCone for t in realposs]
-end
-
 ## Find roots of p for which q is possitive
 function pRoots_qPossitive(p, q, nattemps::Integer=10, randbound::Integer=50)
-    NPp = NewtonPolytope(p)
-    NPq = NewtonPolytope(q)
-    println("Computing vertices of the Newton polytopes, it may take some time.\n")
-    VNPp = Polymake.@convert_to Matrix{Integer} NPp.VERTICES[:,2:end]
-    VNPq = Polymake.@convert_to Matrix{Integer} NPq.VERTICES[:,2:end]
-    println("Vertices the Newton polytopes computed!!!!\n")
-    negVp = FindallVertices(isnegative, p, VNPp)
-    posVq = FindallVertices(ispositive, q, VNPq)
-    println("Computing first cones\n")
-    if length(negVp) < length(posVq)
-        Cones = [Polymake.polytope.normal_cone(NPp, v-1, outer=1) for v in negVp]
-        P = NPq
-        idx = posVq
-    else
-        Cones = [Polymake.polytope.normal_cone(NPq, v-1, outer=1) for v in posVq]
-        P = NPp
-        idx = negVp
-        ## Flip matrices of vertices to homogenize printing (the indices are flip)
-        aux = VNPp
-        VNPp = VNPq
-        VNPq = aux
-    end
-    for i in idx
-        println("Computing second cones $i th\n")
-        c1 = Polymake.polytope.normal_cone(P, i-1, outer=1)
-        for (nc2, c2) in enumerate(Cones)
-            rays = Polymake.polytope.intersection(c1,c2).RAYS
-            r = size(rays, 1)
-            if r > 0
+    NPp, VNPp = @NewtonpolytopeVertices(p)
+    NPq, VNPq = @NewtonpolytopeVertices(q)
+    println("Vertices of the Newton polytopes computed!!!!\n")
+    isneg(x) = x<0
+    ispos(x) = 0<0
+    negVp = Findallrows(isneg, p, VNPp)
+    posVq = Findallrows(ispos, q, VNPq)
+    println("Computing cones to negative vertices of p\n")
+    Conesp = [Polymake.polytope.normal_cone(NPp, v-1, outer=1) for v in negVp]
+#     P = NPq
+    #     idx = posVq
+    # else
+    #     Cones = [Polymake.polytope.normal_cone(NPq, v-1, outer=1) for v in posVq]
+    #     P = NPp
+    #     idx = negVp
+    #     ## Flip matrices of vertices to homogenize printing (the indices are flip)
+    #     aux = VNPp
+    #     VNPp = VNPq
+    #     VNPq = aux
+    #     end
+    for i in posVq
+        println("Computing cone to the $(i)th positive vertex of q\n")
+        c1 = Polymake.polytope.normal_cone(NPq, i-1, outer=1)
+        for (nc2, c2) in enumerate(Conesp)
+        rays = Polymake.polytope.intersection(c1,c2).RAYS
+        r = size(rays, 1)
+        if r > 0
                 println("Intersecting cones found :)")
                 found = false
                 println("Computing point in cone\n")
@@ -152,4 +142,75 @@ function printfound(Vp, Vq, point, proots, qvals)
     for j in findall(>(0), qvals)
         print("$(proots[j])\n")
     end
+end
+
+function pRoots_qPossitive(p, NPp, VNPp, q, NPq, VNPq, nattemps::Integer=10, randbound::Integer=50)
+    println("Finding negative/possitive vertices\n")
+    negVp = Findallrows(isnegative, p, VNPp)
+    posVq = Findallrows(x->(0<x), q, VNPq)
+    println("Computing first cones\n")
+    if length(negVp) < length(posVq)
+        Cones = [Polymake.polytope.normal_cone(NPp, v-1, outer=1) for v in negVp]
+        P = NPq
+        idx = posVq
+    else
+        Cones = [Polymake.polytope.normal_cone(NPq, v-1, outer=1) for v in posVq]
+        P = NPp
+        idx = negVp
+        ## Flip matrices of vertices to homogenize printing (the indices are flip)
+        aux = VNPp
+        VNPp = VNPq
+        VNPq = aux
+    end
+    Listpt = []
+    for i in idx
+        print("==============================================\n")
+        print("==============================================\n")
+        println("Computing the $i th second cone to intersect\n")
+        c1 = Polymake.polytope.normal_cone(P, i-1, outer=1)
+        for (nc2, c2) in enumerate(Cones)
+            # print("==============================================\n")
+            # print("==============================================\n")
+            # println("Intersecting the $(nc2) first cone and the $i second\n")
+            rays = Polymake.polytope.intersection(c1,c2).RAYS
+            r = size(rays, 1)
+            if r > 0
+                # println("Intersecting cones found :)")
+                found = false
+                # println("Computing point in cone (coeffs 1)\n")
+                point = IntPointIncone(rays, ones(Int, 1, r))
+                # print("Point in both outer normal cones\n")
+                # print("$(point)\n")
+                # println("Computing real positive roots\n")
+                proots = CollectallPossitiveRoots(p, point)
+                qvals = [Float64(Nemo.evaluate(q, (Nemo.fmpq).(vec(pt)))) for pt in proots]
+                pvals = [Float64(Nemo.evaluate(p, (Nemo.fmpq).(vec(pt)))) for pt in proots]
+                found = findfirst(>(0), qvals) != nothing
+                if !found
+                    j = 1;
+                    while !found && j<nattemps
+                        j += 1
+                        # println("Computing point in cone (rand coeffs, attempt $j)\n")
+                        point = IntPointIncone(rays, rand(1:randbound, 1, r))
+                        # print("Point in both outer normal cones\n")
+                        # print("$(point)\n")
+                        # println("Computing real positive roots\n")
+                        proots = CollectallPossitiveRoots(p, point)
+                        qvals = [Float64(Nemo.evaluate(q, (Nemo.fmpq).(vec(pt)))) for pt in proots]
+                        pvals = [Float64(Nemo.evaluate(p, (Nemo.fmpq).(vec(pt)))) for pt in proots]
+                        # print("Values of p for the roots\n")
+                        # print("$(pvals)\n")
+                        # print("Values of q for the roots\n")
+                        # print("$(qvals)\n")
+                        found = findfirst(>(0), qvals) != nothing
+                    end
+                end
+                if found
+                    printfound(VNPp[negVp[nc2],:], VNPq[i,:], point, proots, qvals)
+                    Listpt = [Listpt; [[proots, qvals, pvals, point, VNPp[negVp[nc2],:], VNPq[i,:]]]]
+                end
+            end
+        end
+    end
+    return Listpt
 end
