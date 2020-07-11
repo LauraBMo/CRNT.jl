@@ -1,7 +1,10 @@
 
 export
     homogenize,
-    exponent_homovectors
+    exponent_homovectors,
+    CollectallPossitiveRoots,
+    CollectHomoiterInmatrows,
+    Collectallrows
 
 ## Code adapted from "enumarate(iter)"
 struct Homogenize{I}
@@ -75,37 +78,38 @@ julia> collect(exponent_homovectors(p))
 """
 exponent_homovectors(p::MPolyElem) = homogenize(exponent_vectors(p))
 
-"""
-    CollectHomoiterInmatrows(iter)
 
-Given an iterator `iter` whose values are 1d arrays,
-collect its homogenized (with an extra first component set to 1) values in the rows of a matrix.
+"""
+    CollectExponent_homovectors(p::MPolyElem)
+
+Collects the homogenized (with an extra first component set to 1) exponents of `p` in the rows of a matrix.
+The returned matrix can be used to compute the Newton polytope of `p`.
 # Examples
 ```jldoctest; setup = :(using CRNT, Nemo)
 julia> using Nemo
 
 julia> R, vars = PolynomialRing(ZZ, vcat(["k\$i" for i in 1:5], ["x\$i" for i in 1:4]));
 
-julia> p = vars[1]*vars[2]*vars[6]-vars[8]
+julia> q = vars[1]*vars[2]*vars[6]-vars[8]
 k1*k2*x1-x3
 
-julia> collect(exponent_vectors(p))
+julia> collect(exponent_vectors(q))
 2-element Array{Array{Int64,1},1}:
  [1, 1, 0, 0, 0, 1, 0, 0, 0]
  [0, 0, 0, 0, 0, 0, 0, 1, 0]
 
-julia> CollectHomoiterInmatrows(exponent_vectors(p))
+julia> CollectExponent_homovectors(q)
 2×10 Transpose{Int64,Array{Int64,2}}:
  1  1  1  0  0  0  1  0  0  0
  1  0  0  0  0  0  0  0  1  0
 ```
 
-Recall it is approximately ten times more efficient than the equivalent
+Recall it is approximately ten times faster than the equivalent
     transpose(reduce(hcat,collect(exponent_homovectors(q))))
 """
-function CollectHomoiterInmatrows(iter)
-    ## Save the iterator
-    # iter = exponent_vectors(p)
+function CollectExponent_homovectors(p)
+    ## Save the iterator (this function just works for iters whose states are Int and start at ZERO)
+    iter = exponent_vectors(p)
     ## First iteration outside the loop to prealocate v
     (u, state) = iterate(iter)
     ## Prealocate v
@@ -123,18 +127,45 @@ function CollectHomoiterInmatrows(iter)
     return transpose(v)
 end
 
-getexponent(x) = x[2]
-# predicate=(x->isnegative(x[1]))
-function CollectallVertices(predicate, p, V)
-    isnegvertex(x) = predicate(x) && x[2] in eachrow(V)
-    return getexponent.(Iterators.filter(isnegvertex, zip(coeffs(p),exponent_vectors(p))))
+"""
+    Collectallrows(predicate, p::MPolyElem, V::AbstractMatrix)
+
+Returns an `Array` of all the exponents of terms of `p` for which the exponent is a row of `V` and the coefficient satisfies `predicate`.
+
+# Examples
+```jldoctest; setup = :(using CRNT)
+julia> using Nemo
+
+julia> R, vars = PolynomialRing(ZZ, vcat(["k\$i" for i in 1:5], ["x\$i" for i in 1:4]));
+
+julia> q = vars[1]*vars[2]*vars[6]-vars[3]*vars[8]+vars[5]*vars[9]-2*vars[1]*vars[3]*vars[5]^2
+k1*k2*x1-2*k1*k3*k5^2-k3*x3+k5*x4
+
+julia> collect(exponent_vectors(q))
+4-element Array{Array{Int64,1},1}:
+ [1, 1, 0, 0, 0, 1, 0, 0, 0]
+ [1, 0, 1, 0, 2, 0, 0, 0, 0]
+ [0, 0, 1, 0, 0, 0, 0, 1, 0]
+ [0, 0, 0, 0, 1, 0, 0, 0, 1]
+
+julia> V =  [[1 1 0 0 0 1 0 0 0]; [0 0 1 0 0 0 0 1 0]; [1 0 1 0 2 0 0 0 0]];
+
+julia> Collectallrows(x->Nemo.isless(x,0), q, V)
+2-element Array{Array{Int64,1},1}:
+ [1, 0, 1, 0, 2, 0, 0, 0, 0]
+ [0, 0, 1, 0, 0, 0, 0, 1, 0]
+```
+"""
+function Collectallrows(predicate, p::MPolyElem, V::AbstractMatrix)
+    predisinV(x) = predicate(x[1]) && x[2] in eachrow(V)
+    getexponent(x) = x[2]
+    return getexponent.(Iterators.filter(predisinV, zip(coeffs(p),exponent_vectors(p))))
 end
 
-# predicate=isnegative
-function FindallVertices(predicate, p::MPolyElem, V::AbstractMatrix)
-    negexpposs = findall(predicate, collect(coeffs(p)))
-    negexp = [iterate(exponent_vectors(p),n-1)[1] for n in negexponentposs]
-    return findall(in(negexp), collect(eachrow(V)))
+function Findallrows(predicate, p::MPolyElem, V::AbstractMatrix)
+    perdexpposs = findall(predicate, collect(coeffs(p)))
+    perdexp = [iterate(exponent_vectors(p),n-1)[1] for n in perdexpposs]
+    return findall(in(perdexp), collect(eachrow(V)))
 end
 
 # getcoeff(x) = x[1]
@@ -148,3 +179,22 @@ end
 # using BenchmarkTools
 # @benchmark getexponent.(negcoeffs_exponent(q))
 # @benchmark [iterate(exponent_vectors(q),n-1)[1] for n in findall(isnegative, collect(coeffs(q)))]
+
+function CollectallRootspositiveorthant(p, inNormalCone, realtol::Real=1e-7)
+    ## Compute exponent of t (to know the minimum in case it is negative).
+    texponents = [dot(inNormalCone,exp) for exp in exponent_vectors(p)]
+    maxdeg = maximum(texponents)
+    mindeg = minimum(texponents)
+    ## If mindeg>0 we divide by t^(mindeg), otherwise we multiply.
+    ## Both correspond to shift by -mindeg!
+    poly = zeros(maxdeg-mindeg+1)
+    for (c,i) in zip(coeffs(p),texponents)
+        poly[i-mindeg+1] = c
+    end
+    # mindeg = findfirst(!=(0), poly)
+    # roots = PolynomialRoots.roots(BigFloat.(poly[mindeg:end]))
+    # roots = PolynomialRoots.roots(poly[mindeg:end])
+    roots = PolynomialRoots.roots(BigFloat.(poly))
+    realposs = filter(>(0), real.(filter(x->(abs(imag(x))<realtol), roots)))
+    return [t.^inNormalCone for t in realposs]
+end
