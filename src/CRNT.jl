@@ -1,5 +1,6 @@
 module CRNT
 
+ENV["NEMO_PRINT_BANNER"] = "false"
 using Nemo # matrix, FlintIntegerRing, nullspace
 import AbstractAlgebra: Ring
 import Polymake # polytope.cone,intersection
