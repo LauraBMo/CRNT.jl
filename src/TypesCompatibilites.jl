@@ -11,3 +11,6 @@ Base.convert(::Type{T}, x::Nemo.fmpq) where {T<:AbstractFloat} = T(Rational(x))
 ## From float to fmpq
 (a::Nemo.FlintRationalField)(x::T) where {T<:AbstractFloat} = Nemo.fmpq(rationalize(x))
 Nemo.fmpq(x::T) where {T<:AbstractFloat} = Nemo.fmpq(rationalize(x))
+
+## From Nemo integers to Juila rationals
+Rational{T}(x::Nemo.fmpz) where {T<:Integer} = Rational{T}(T(x))
