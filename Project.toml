@@ -13,7 +13,7 @@ PolynomialRoots = "3a141323-8675-5d76-9d11-e1df1406c778"
 [compat]
 AbstractAlgebra = "0.9"
 Nemo = "0.17"
-Polymake = "0.4, 0.5"
+Polymake = "0.4"
 PolynomialRoots = "1.0"
 julia = "1"
 
