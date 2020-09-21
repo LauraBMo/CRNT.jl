@@ -1,11 +1,15 @@
 module CRNT
 
-ENV["NEMO_PRINT_BANNER"] = "false"
+## ENV["NEMO_PRINT_BANNER"] = false
 using Nemo # matrix, FlintIntegerRing, nullspace
 import AbstractAlgebra: Ring
 import Polymake # polytope.cone,intersection
 import LinearAlgebra: I, dot
 import PolynomialRoots
+
+# function __init__()
+# end
+
 
 include("Cones.jl")
 include("ConvexParameters.jl")
