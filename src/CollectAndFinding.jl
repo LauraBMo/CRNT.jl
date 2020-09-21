@@ -1,7 +1,7 @@
 
 export
     homogenize,
-    exponent_homovectors,
+    homoexponent_vectors,
     CollectallPossitiveRoots,
     CollectHomoiterInmatrows,
     Collectallrows
@@ -40,21 +40,21 @@ Base.IteratorEltype(::Type{Homogenize{I}}) where {I} = Base.IteratorEltype(I)
 Base.@propagate_inbounds function Base.iterate(h::Homogenize, state)
     n = iterate(h.itr, state...)
     n === nothing && return n
-    return [oneunit(Base.eltype(n[1])); @view(n[1][:])], n[2]
+    return pushfirst!(Vector(n[1]), oneunit(Base.eltype(n[1]))), n[2]
 end
 
 Base.@propagate_inbounds function Base.iterate(h::Homogenize)
     n = iterate(h.itr)
     n === nothing && return n
-    return [oneunit(Base.eltype(n[1])); @view(n[1][:])], n[2]
+    return pushfirst!(Vector(n[1]), oneunit(Base.eltype(n[1]))), n[2]
 end
 
 
 
 """
-    exponent_homovectors(p::MPolyElem)
+    homoexponent_vectors(p::MPolyElem)
 
-An iterator for the homogenized (with an extra first component set to 1) exponent vectors of the multivariate polynomial `p`.
+An iterator for the homogenized (with an extra first component set to '1' exponent vectors of the multivariate polynomial `p`.
 To retrieve an array, use `collect(exponent_homovectors(p))`.
 # Examples
 ```jldoctest; setup = :(using CRNT, Nemo)
@@ -70,14 +70,31 @@ julia> collect(exponent_vectors(p))
  [1, 1, 0, 0, 0, 1, 0, 0, 0]
  [0, 0, 0, 0, 0, 0, 0, 1, 0]
 
-julia> collect(exponent_homovectors(p))
+julia> collect(homoexponent_vectors(p))
 2-element Array{Any,1}:
  [1, 1, 1, 0, 0, 0, 1, 0, 0, 0]
  [1, 0, 0, 0, 0, 0, 0, 0, 1, 0]
 ```
 """
-exponent_homovectors(p::MPolyElem) = homogenize(exponent_vectors(p))
+homoexponent_vectors(p::MPolyElem) = homogenize(exponent_vectors(p))
 
+function collect_homoiter(iter)
+    ## First iteration outside the loop to prealocate v
+    (u, state) = iterate(iter)
+    ## Prealocate v
+    v = ones(eltype(u), size(u,1)+1, length(iter))
+    # v = Matrix{eltype(u)}(undef, size(u,1)+1, length(iter))
+    # v[1,:] .= one(eltype(u))
+    v[2:end,1] = u
+    next = iterate(iter, state)
+    ## Start the loop
+    while next !== nothing
+        (u, state) = next
+        v[2:end,state-1] = u
+        next = iterate(iter, state)
+    end
+    return transpose(v)
+end
 
 """
     CollectExponent_homovectors(p::MPolyElem)
