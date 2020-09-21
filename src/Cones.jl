@@ -58,10 +58,10 @@ function Newtonpolytope(p)
     return Newtonpolytope(Exponents)
 end
 
-macro NewtonpolytopeVertices(p)
+function NewtonpolytopeVertices(p, polyname="p")
     P = Newtonpolytope(p)
-    println("Computing vertices of the Newton polytope $(string(p)), it may take some time.\n")
-    PV = Polymake.@convert_to Matrix{Integer} NPp.VERTICES[:,2:end]
+    println("Computing vertices of the Newton polytope $(polyname), it may take some time.\n")
+    PV = Polymake.@convert_to Matrix{Integer} P.VERTICES[:,2:end]
     return P, Int.(Array(PV))
 end
 
@@ -75,15 +75,9 @@ end
 
 ## Find roots of p for which q is possitive
 function pRoots_qPossitive(p, q, nattemps::Integer=10, randbound::Integer=50)
-    NPp, VNPp = @NewtonpolytopeVertices(p)
-    NPq, VNPq = @NewtonpolytopeVertices(q)
+    NPp, VNPp = NewtonpolytopeVertices(p)
+    NPq, VNPq = NewtonpolytopeVertices(q, "q")
     println("Vertices of the Newton polytopes computed!!!!\n")
-    isneg(x) = x<0
-    ispos(x) = 0<0
-    negVp = Findallrows(isneg, p, VNPp)
-    posVq = Findallrows(ispos, q, VNPq)
-    println("Computing cones to negative vertices of p\n")
-    Conesp = [Polymake.polytope.normal_cone(NPp, v-1, outer=1) for v in negVp]
 #     P = NPq
     #     idx = posVq
     # else
@@ -99,12 +93,11 @@ function pRoots_qPossitive(p, q, nattemps::Integer=10, randbound::Integer=50)
         println("Computing cone to the $(i)th positive vertex of q\n")
         c1 = Polymake.polytope.normal_cone(NPq, i-1, outer=1)
         for (nc2, c2) in enumerate(Conesp)
-        rays = Polymake.polytope.intersection(c1,c2).RAYS
-        r = size(rays, 1)
-        if r > 0
+            rays = Polymake.polytope.intersection(c1,c2).RAYS
+            r = size(rays, 1)
+            if r > 0
                 println("Intersecting cones found :)")
                 found = false
-                println("Computing point in cone\n")
                 point = IntPointIncone(rays, ones(Int, 1, r))
                 println("Computing real positive roots\n")
                 proots = CollectallPossitiveRoots(p, point)
@@ -129,6 +122,7 @@ function pRoots_qPossitive(p, q, nattemps::Integer=10, randbound::Integer=50)
     end
 end
 
+
 function printfound(Vp, Vq, point, proots, qvals)
     print("==============================================\n")
     print("==============================================\n")
@@ -146,29 +140,19 @@ end
 
 function pRoots_qPossitive(p, NPp, VNPp, q, NPq, VNPq, nattemps::Integer=10, randbound::Integer=50)
     println("Finding negative/possitive vertices\n")
-    negVp = Findallrows(isnegative, p, VNPp)
-    posVq = Findallrows(x->(0<x), q, VNPq)
-    println("Computing first cones\n")
-    if length(negVp) < length(posVq)
-        Cones = [Polymake.polytope.normal_cone(NPp, v-1, outer=1) for v in negVp]
-        P = NPq
-        idx = posVq
-    else
-        Cones = [Polymake.polytope.normal_cone(NPq, v-1, outer=1) for v in posVq]
-        P = NPp
-        idx = negVp
-        ## Flip matrices of vertices to homogenize printing (the indices are flip)
-        aux = VNPp
-        VNPp = VNPq
-        VNPq = aux
-    end
+    isneg(x) = x<0
+    ispos(x) = 0<x
+    negVp = Findallrows(isneg, p, VNPp)
+    posVq = Findallrows(ispos, q, VNPq)
+    println("Computing cones to negative vertices of p\n")
+    Conesp = [Polymake.polytope.normal_cone(NPp, v-1, outer=1) for v in negVp]
     Listpt = []
-    for i in idx
+    for i in posVq
         print("==============================================\n")
         print("==============================================\n")
-        println("Computing the $i th second cone to intersect\n")
+        println("Computing the cone to the $(i)th positive vertex of q\n")
         c1 = Polymake.polytope.normal_cone(P, i-1, outer=1)
-        for (nc2, c2) in enumerate(Cones)
+        for (nc2, c2) in enumerate(Conesp)
             # print("==============================================\n")
             # print("==============================================\n")
             # println("Intersecting the $(nc2) first cone and the $i second\n")
