@@ -6,9 +6,10 @@ export Diagonal, Jacobian
 
 Given a Julia vector `V` of entries, construct the corresponding AbstractAlgebra.jl one-column matrix over the given ring `R`, assuming all the entries can be coerced into `R`.
 """
-function Nemo.matrix(R::Ring, V::AbstractVector)
+function Nemo.matrix(R::AbstractAlgebra.Ring, V::AbstractVector)
     return Nemo.matrix(R, reshape(V, (:,1)))
 end
+
 
 """
 
@@ -16,17 +17,21 @@ end
 
 Given a Julia vector `V` of entries, construct the corresponding AbstractAlgebra.jl diagonal matrix over the given ring `R`, assuming all the entries can be coerced into `R`.
 """
-function Diagonal(R::Ring, V::AbstractVector{T}) where {T}
+function Diagonal(R::AbstractAlgebra.Ring, V::AbstractVector{T}) where {T}
     n = size(V,1)
     D = Nemo.zero_matrix(R,n,n)
     for i in 1:n D[i,i] = V[i] end
     return D
 end
 
+function partialderivative(i::Integer)
+    return p -> derivative(p,i)
+end
+
 """
 
     Jacobian(R, M)
-    Jacobian(R, M, vars=1:length(Nemo.gens(R)))
+    Jacobian(R, M, vars=1:length(gens(R)))
 
 Returns the Jacobian matrix of a one-column matrix of polynomials `M` with respect to the generators of `R` indexed by `vars`. When `vars` is omitted all the generators of `R` are used.
 
@@ -36,7 +41,7 @@ julia> using Nemo
 
 julia> R, vars = PolynomialRing(ZZ, vcat(["k\$i" for i in 1:5], ["x\$i" for i in 1:4]));
 
-julia> M = matrix(R, [vars[1]*vars[2]*vars[6]-vars[8]; vars[3]*vars[9]+2*vars[7]])
+julia> M = [vars[1]*vars[2]*vars[6]-vars[8]; vars[3]*vars[9]+2*vars[7]]
 [k1*k2*x1-x3]
 [ k3*x4+2*x2]
 
@@ -49,14 +54,12 @@ julia> Jacobian(R,M)
 [    0      0  x4  0  0      0  2   0  k3]
 ```
 """
-function Jacobian(R::Ring, M::MatElem{T}, vars=1:length(Nemo.gens(R))) where {T<:RingElem}
-    r, c = size(M)
-    @assert c == 1
-    J = Nemo.zero_matrix(R, r, length(vars))
-    for i in 1:r
-        for (j, k) in enumerate(vars)
-            J[i,j] = Nemo.derivative(M[i,1], k)
-        end
+function Jacobian(R::MPolyRing, M::AbstractVector, vars=1:length(gens(R)))
+    rows = size(M,1)
+    cols = length(vars)
+    J = fill(zero(R), rows, cols)
+    for j in 1:cols
+        J[:,j] = partialderivative(vars[j]).(M)
     end
     return J
 end
