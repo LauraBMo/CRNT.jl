@@ -34,7 +34,6 @@ end
 
 ##########################
 ##########################
-##########################
 ######## W
 ########
 
@@ -128,3 +127,4 @@ function SystemF(net, nxs)
     Y = StoichiometricCoeffs(net, nxs)
     Ys = StoichiometricSources(Y)
     N = StoichiometricMatrix(Y)
+end

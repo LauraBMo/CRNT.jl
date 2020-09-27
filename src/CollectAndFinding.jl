@@ -1,6 +1,5 @@
 
-export
-    homogenize,
+export homogenize,
     homoexponent_vectors,
     CollectallPossitiveRoots,
     CollectHomoiterInmatrows,
@@ -82,7 +81,7 @@ function collect_homoiter(iter)
     ## First iteration outside the loop to prealocate v
     (u, state) = iterate(iter)
     ## Prealocate v
-    v = ones(eltype(u), size(u,1)+1, length(iter))
+    v = ones(eltype(u), size(u, 1) + 1, length(iter))
     # v = Matrix{eltype(u)}(undef, size(u,1)+1, length(iter))
     # v[1,:] .= one(eltype(u))
     v[2:end,1] = u
@@ -90,7 +89,7 @@ function collect_homoiter(iter)
     ## Start the loop
     while next !== nothing
         (u, state) = next
-        v[2:end,state-1] = u
+        v[2:end,state - 1] = u
         next = iterate(iter, state)
     end
     return transpose(v)
@@ -130,7 +129,7 @@ function CollectExponent_homovectors(p)
     ## First iteration outside the loop to prealocate v
     (u, state) = iterate(iter)
     ## Prealocate v
-    v = ones(eltype(u), size(u,1)+1, length(iter))
+    v = ones(eltype(u), size(u, 1) + 1, length(iter))
     # v = Matrix{eltype(u)}(undef, size(u,1)+1, length(iter))
     # v[1,:] .= one(eltype(u))
     v[2:end,1] = u
@@ -176,17 +175,17 @@ julia> Collectallrows(x->Nemo.isless(x,0), q, V)
 function Collectallrows(predicate, p::MPolyElem, V::AbstractMatrix)
     predisinV(x) = predicate(x[1]) && x[2] in eachrow(V)
     getexponent(x) = x[2]
-    return getexponent.(Iterators.filter(predisinV, zip(coeffs(p),exponent_vectors(p))))
+    return getexponent.(Iterators.filter(predisinV, zip(coeffs(p), exponent_vectors(p))))
 end
 
 function Findallrows(predicate, p::MPolyElem, V::AbstractMatrix)
     perdexpposs = findall(predicate, collect(coeffs(p)))
-    perdexp = [iterate(exponent_vectors(p),n-1)[1] for n in perdexpposs]
+    perdexp = [iterate(exponent_vectors(p), n - 1)[1] for n in perdexpposs]
     return findall(in(perdexp), collect(eachrow(V)))
 end
 
 # getcoeff(x) = x[1]
-# isnegative(x) = x<0
+isnegative(x) = x < 0
 # iscoeffnegative(x) = isnegative(getcoeff(x))
 # negcoeffs_exponent(p) = Iterators.Filter(iscoeffnegative, zip(coeffs(p),exponent_vectors(p)))
 # negexp = getexponent.(negcoeffs_exponent(p))
@@ -199,19 +198,19 @@ end
 
 function CollectallRootspositiveorthant(p, inNormalCone, realtol::Real=1e-7)
     ## Compute exponent of t (to know the minimum in case it is negative).
-    texponents = [dot(inNormalCone,exp) for exp in exponent_vectors(p)]
+    texponents = [dot(inNormalCone, exp) for exp in exponent_vectors(p)]
     maxdeg = maximum(texponents)
     mindeg = minimum(texponents)
     ## If mindeg>0 we divide by t^(mindeg), otherwise we multiply.
     ## Both correspond to shift by -mindeg!
-    poly = zeros(maxdeg-mindeg+1)
-    for (c,i) in zip(coeffs(p),texponents)
-        poly[i-mindeg+1] = c
+    poly = zeros(maxdeg - mindeg + 1)
+    for (c, i) in zip(coeffs(p), texponents)
+        poly[i - mindeg + 1] = c
     end
     # mindeg = findfirst(!=(0), poly)
     # roots = PolynomialRoots.roots(BigFloat.(poly[mindeg:end]))
     # roots = PolynomialRoots.roots(poly[mindeg:end])
     roots = PolynomialRoots.roots(BigFloat.(poly))
-    realposs = filter(>(0), real.(filter(x->(abs(imag(x))<realtol), roots)))
+    realposs = filter(>(0), real.(filter(x -> (abs(imag(x)) < realtol), roots)))
     return [t.^inNormalCone for t in realposs]
 end
