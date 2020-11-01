@@ -1,5 +1,5 @@
 
-export homogenize,
+export collect_homoexponent_vectors,
     homoexponent_vectors,
     CollectallPossitiveRoots,
     CollectHomoiterInmatrows,
@@ -77,24 +77,6 @@ julia> collect(homoexponent_vectors(p))
 """
 homoexponent_vectors(p::MPolyElem) = homogenize(exponent_vectors(p))
 
-function collect_homoiter(iter)
-    ## First iteration outside the loop to prealocate v
-    (u, state) = iterate(iter)
-    ## Prealocate v
-    v = ones(eltype(u), size(u, 1) + 1, length(iter))
-    # v = Matrix{eltype(u)}(undef, size(u,1)+1, length(iter))
-    # v[1,:] .= one(eltype(u))
-    v[2:end,1] = u
-    next = iterate(iter, state)
-    ## Start the loop
-    while next !== nothing
-        (u, state) = next
-        v[2:end,state - 1] = u
-        next = iterate(iter, state)
-    end
-    return transpose(v)
-end
-
 """
     CollectExponent_homovectors(p::MPolyElem)
 
@@ -123,15 +105,13 @@ julia> CollectExponent_homovectors(q)
 Recall it is approximately ten times faster than the equivalent
     transpose(reduce(hcat,collect(exponent_homovectors(q))))
 """
-function CollectExponent_homovectors(p)
+function collect_homoexponent_vectors(p)
     ## Save the iterator (this function just works for iters whose states are Int and start at ZERO)
     iter = exponent_vectors(p)
     ## First iteration outside the loop to prealocate v
     (u, state) = iterate(iter)
     ## Prealocate v
     v = ones(eltype(u), size(u, 1) + 1, length(iter))
-    # v = Matrix{eltype(u)}(undef, size(u,1)+1, length(iter))
-    # v[1,:] .= one(eltype(u))
     v[2:end,1] = u
     next = iterate(iter, state)
     ## Start the loop
@@ -140,7 +120,7 @@ function CollectExponent_homovectors(p)
         v[2:end,state] = u
         next = iterate(iter, state)
     end
-    return transpose(v)
+    return v
 end
 
 """
