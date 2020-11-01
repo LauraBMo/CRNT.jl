@@ -2,7 +2,7 @@ module CRNT
 
 ## ENV["NEMO_PRINT_BANNER"] = false
 using Nemo # matrix, FlintIntegerRing, nullspace
-import AbstractAlgebra: Ring
+import AbstractAlgebra
 # import Polymake # polytope.cone,intersection
 import LinearAlgebra: I, dot, Diagonal
 import PolynomialRoots
