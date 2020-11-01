@@ -59,8 +59,8 @@ function cone_positivenullspace(N::AbstractMatrix{T}) where {T <: Integer}
 end
 
 function Newtonpolytope(p)
-    Exponents = CollectExponent_homovectors(p)
-    return Newtonpolytope(Exponents)
+    points = transpose(collect_homoexponent_vectors(p))
+    return Polymake.polytope.Polytope(POINTS=points)
 end
 
 function NewtonpolytopeVertices(p, polyname="p")
