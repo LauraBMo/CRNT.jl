@@ -1,4 +1,18 @@
-export Diagonal, Jacobian
+
+export dissect,
+    Diagonal,
+    partialdervativeof,
+    Jacobian
+
+@doc raw"""
+    dissect(p::MPolyElem)
+
+Iterator for the coefficients and exponent vectors of the given polynomial.
+
+"""
+function dissect(p::MPolyElem)
+    return zip(coeffs(p), exponent_vectors(p))
+end
 
 """
 
