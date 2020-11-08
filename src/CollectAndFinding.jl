@@ -1,9 +1,16 @@
 
-export collect_homoexponent_vectors,
+export homogenize,
     homoexponent_vectors,
-    CollectallPossitiveRoots,
-    CollectHomoiterInmatrows,
-    Collectallrows
+    collect_homoexponent_vectors,
+    pushfirst_sliceofones,
+    Collectallrows,
+    Findallrows,
+    texponents,
+    tcoeffs,
+    realpositiveroots,
+    tevalof,
+    tpointof,
+    collect_realpositiveroots
 
 ## Code adapted from "enumarate(iter)"
 struct Homogenize{I}
@@ -53,8 +60,8 @@ end
 """
     homoexponent_vectors(p::MPolyElem)
 
-An iterator for the homogenized (with an extra first component set to '1' exponent vectors of the multivariate polynomial `p`.
-To retrieve an array, use `collect(exponent_homovectors(p))`.
+An iterator for the homogenized (with an extra first component set to '1') exponent vectors of the multivariate polynomial `p`.
+To retrieve an array, use `collect(homoexponent_vectors(p))`.
 # Examples
 ```jldoctest; setup = :(using CRNT, Nemo)
 julia> using Nemo
@@ -106,23 +113,32 @@ Recall it is approximately ten times faster than the equivalent
     transpose(reduce(hcat,collect(exponent_homovectors(q))))
 """
 function collect_homoexponent_vectors(p)
-    ## Save the iterator (this function just works for iters whose states are Int and start at ZERO)
-    iter = exponent_vectors(p)
-    ## First iteration outside the loop to prealocate v
-    (u, state) = iterate(iter)
-    ## Prealocate v
-    v = ones(eltype(u), size(u, 1) + 1, length(iter))
-    v[2:end,1] = u
-    next = iterate(iter, state)
-    ## Start the loop
-    while next !== nothing
-        (u, state) = next
-        v[2:end,state] = u
-        next = iterate(iter, state)
-    end
-    return v
+    # ## Save the iterator (this function just works for iters whose states are Int and start at ZERO)
+    # iter = exponent_vectors(p)
+    # ## First iteration outside the loop to prealocate v
+    # (u, state) = iterate(iter)
+    # ## Prealocate v
+    # v = ones(eltype(u), size(u, 1) + 1, length(iter))
+    # v[2:end,1] = u
+    # next = iterate(iter, state)
+    # ## Start the loop
+    # while next !== nothing
+    #     (u, state) = next
+    #     v[2:end,state] = u
+    #     next = iterate(iter, state)
+    # end
+    # return v
+    return pushfirst_sliceofones(reduce(hcat, exponent_vectors(p)))
 end
 
+function pushfirst_sliceofones(M, dims=1)
+    indx = collect(size(M))
+    indx[dims] = 1
+    return cat(ones(eltype(M), Tuple(indx)), M, dims=dims)
+end
+
+
+# R, vars = PolynomialRing(ZZ, vcat(["k$i" for i in 1:5], ["x$i" for i in 1:4]));
 """
     Collectallrows(predicate, p::MPolyElem, V::AbstractMatrix)
 
@@ -159,13 +175,13 @@ function Collectallrows(predicate, p::MPolyElem, V::AbstractMatrix)
 end
 
 function Findallrows(predicate, p::MPolyElem, V::AbstractMatrix)
-    perdexpposs = findall(predicate, collect(coeffs(p)))
-    perdexp = [iterate(exponent_vectors(p), n - 1)[1] for n in perdexpposs]
-    return findall(in(perdexp), collect(eachrow(V)))
+    predexpposs = findall(predicate, collect(coeffs(p)))
+    predexp = [iterate(exponent_vectors(p), n - 1)[1] for n in predexpposs]
+    return findall(in(predexp), collect(eachrow(V)))
 end
 
 # getcoeff(x) = x[1]
-isnegative(x) = x < 0
+# isnegative(x) = x < 0
 # iscoeffnegative(x) = isnegative(getcoeff(x))
 # negcoeffs_exponent(p) = Iterators.Filter(iscoeffnegative, zip(coeffs(p),exponent_vectors(p)))
 # negexp = getexponent.(negcoeffs_exponent(p))
@@ -176,21 +192,48 @@ isnegative(x) = x < 0
 # @benchmark getexponent.(negcoeffs_exponent(q))
 # @benchmark [iterate(exponent_vectors(q),n-1)[1] for n in findall(isnegative, collect(coeffs(q)))]
 
-function CollectallRootspositiveorthant(p, inNormalCone, realtol::Real=1e-7)
+function texponents(p::MPolyElem, texp)
     ## Compute exponent of t (to know the minimum in case it is negative).
-    texponents = [dot(inNormalCone, exp) for exp in exponent_vectors(p)]
-    maxdeg = maximum(texponents)
-    mindeg = minimum(texponents)
-    ## If mindeg>0 we divide by t^(mindeg), otherwise we multiply.
+    return [dot(texp, exp) for exp in exponent_vectors(p)]
+end
+
+function tcoeffs(p::MPolyElem, texps)
+    maxdeg = maximum(texps)
+    mindeg = minimum(texps)
+    ## If mindeg>0 we divide by t^(mindeg), otherwise we multiply by it.
     ## Both correspond to shift by -mindeg!
-    poly = zeros(maxdeg - mindeg + 1)
-    for (c, i) in zip(coeffs(p), texponents)
-        poly[i - mindeg + 1] = c
+    polyn = zeros(maxdeg - mindeg + 1)
+    for (c, i) in zip(coeffs(p), texps)
+        polyn[i - mindeg + 1] += BigFloat(c)
     end
-    # mindeg = findfirst(!=(0), poly)
-    # roots = PolynomialRoots.roots(BigFloat.(poly[mindeg:end]))
-    # roots = PolynomialRoots.roots(poly[mindeg:end])
-    roots = PolynomialRoots.roots(BigFloat.(poly))
-    realposs = filter(>(0), real.(filter(x -> (abs(imag(x)) < realtol), roots)))
-    return [t.^inNormalCone for t in realposs]
+    return polyn
+end
+
+function realpositiveroots(polyn, rtol::Real=1e-7)
+    # poly = evalexponent(p, texp)
+    roots = PolynomialRoots.roots(polyn)
+    return filter(isnegative, filter_complex(roots, rtol))
+end
+
+function tevalof(p::MPolyElem, texps, T=Float64)
+    return t -> sum([T(c) * (t^i) for (c, i) in zip(coeffs(p), texps)])
+end
+
+function tevalof(polyn::AbstractVector{T}) where {T <: AbstractFloat}
+    return t -> sum([T(c) * (t^i) for (i, c) in enumerate(polyn)])
+end
+
+function teval(p::MPolyElem, point::AbstractVector{T}) where {T <: AbstractFloat}
+    return sum([T(c) * ((point).^(exp)) for (c, exp) in dissect(p)])
+end
+
+function tpointof(texp)
+    return t -> (t).^(texp)
+end
+
+function collect_realpositiveroots(p::MPolyElem, texp, rtol::Real=1e-7)
+    texps = texponents(p, texp)
+    tpoly = tcoeffs(p, texps)
+    troots = realpositiveroots(tpoly, rtol)
+    return tpointof(texp).(troots)
 end

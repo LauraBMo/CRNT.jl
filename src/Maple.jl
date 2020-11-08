@@ -1,23 +1,10 @@
 
-
-function toMaple(net, nxs, file::String)
-    S = stoichiometriccoeffs(net, nxs) ## S may have zero rows and cols
-    N = stoichiometricmatrix(S) ## Has no zero row or col
-    nts, W = conservativelaws(N)
-    Y = kineticorder(S)
-    E = cone_positivenullspace(N)
-    open(file, "w") do io
-        write(io, "read(\"ModelsMatricies/Procs.mpl\"):\n")
-        @matrixtoMaple io Y
-        @matrixtoMaple io N
-        @matrixtoMaple io W
-        @matrixtoMaple io E
-        xstoMaple(io, stoichiometricsources(S))
-        kstoMaple(io, stoichiometricsources(S))
-        systemtoMaple(io)
-        WsystemtoMaple(io, nts, W)
-    end
-end
+export matrixtoMaple,
+    xstoMaple,
+    kstoMaple,
+    systemtoMaple,
+    WsystemtoMaple,
+    toMaple
 
 function matrixtoMaple(io, M, name)
     write(io, "\n\n$(name) := Matrix$(size(M)):\n\n")
@@ -77,4 +64,23 @@ function WsystemtoMaple(io, nts, W)
     write(io, "Sweq:= equfy(Sw):\n")
     write(io, "J := VectorCalculus[Jacobian](Sw, xs):\n")
     write(io, "DJ := (-1)^(Rank(N))*Determinant(J):\n")
+end
+
+function toMaple(net, nxs, file::String)
+    S = stoichiometriccoeffs(net, nxs) ## S may have zero rows and cols
+    N = stoichiometricmatrix(S) ## Has no zero row or col
+    nts, W = conservativelaws(N)
+    Y = kineticorder(S)
+    E = cone_positivenullspace(N)
+    open(file, "w") do io
+        write(io, "read(\"ModelsMatricies/Procs.mpl\"):\n")
+        @matrixtoMaple io Y
+        @matrixtoMaple io N
+        @matrixtoMaple io W
+        @matrixtoMaple io E
+        xstoMaple(io, stoichiometricsources(S))
+        kstoMaple(io, stoichiometricsources(S))
+        systemtoMaple(io)
+        WsystemtoMaple(io, nts, W)
+    end
 end

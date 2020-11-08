@@ -30,3 +30,43 @@ function convert_to_array(M::S, ::T=1) where {S <: MatElem,T}
     return T.(Array(M))
 end
 
+
+###############################################################################
+#                         Miscelaneos small functions                         #
+###############################################################################
+
+# Nemo.isnonzero(x) = (x) != (zero(x))
+# use !iszero instead (it is performance equivalent and more clean)
+anynonzero(A) = any((!iszero).(A))
+
+isrealof(rtol) = z -> abs(imag(z)) < rtol #
+isnegative(x) = (x) < zero(x)
+
+filter_complex(A, rtol) = real.(filter(isrealof(rtol), A))
+filter_negative(A) = filter(isnegative, A)
+# filter_positiveorthant(A, rtol) = filternegative(filtercomplex(A, rtol))
+
+
+###############################################################################
+#                             Array manipulations                             #
+###############################################################################
+
+function findfirstnonzero(A)
+    return findfirst((!iszero), A)
+end
+
+function findpivotsof(W)
+    # return findfirstnonzero.(eachrow(W)) ## it works just for matrices, code below is more generic.
+    # return mapslices(findfirstnonzero, W, dims=collect(2:ndims(W)))
+    return n -> findfirstnonzero.(eachslice(W, dims=n))
+end
+
+function nonzeroslicesof(A)
+    # return n->vec(mapslices(anynonzero, M, dims=deleteat!(collect(1:ndims(M)),n)))
+    return n -> anynonzero.(eachslice(A, dims=n))
+end
+
+function dropzeroslices(A)
+    indeces = nonzeroslicesof(A).(1:ndims(A))
+    return A[indeces...]
+end
