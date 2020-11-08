@@ -23,7 +23,7 @@ macro matrixtoMaple(io, M)
 end
 
 function xstoMaple(io, stoichiometricsources)
-    xs = (1:(size(stoichiometricsources, 1)))[nonzerorows(stoichiometricsources)]
+    xs = (1:(size(stoichiometricsources, 1)))[nonzeroslices(stoichiometricsources)(1)]
     write(io, "\n\nnxs := $(size(xs, 1)):\n")
     write(io, "xs := [seq(x[i], i = [")
     for x in xs[1:(end - 1)]
@@ -38,7 +38,7 @@ function xstoMaple(io, stoichiometricsources)
 end
 
 function kstoMaple(io, stoichiometricsources)
-    ks = (1:(size(stoichiometricsources, 2)))[nonzerocols(stoichiometricsources)]
+    ks = (1:(size(stoichiometricsources, 2)))[nonzeroslices(stoichiometricsources)(2)]
     write(io, "\n\nnks := $(size(ks, 1)):\n")
     write(io, "ks := [seq(k[i], i = [")
     for k in ks[1:(end - 1)]
@@ -58,12 +58,19 @@ end
 function WsystemtoMaple(io, nts, W)
     write(io, "\n\nSw := copy(S):\n")
     write(io, "Wx := (W.(Vector[column](xs))) - Vector[column]([seq(T[i], i = 1 .. $(nts))]):\n")
-    for (i, p) in enumerate(findpivots(W))
+    for (i, p) in enumerate(findpivots(W)(1))
         write(io, "Sw[$p] := Wx[$i]:\n")
     end
     write(io, "Sweq:= equfy(Sw):\n")
     write(io, "J := VectorCalculus[Jacobian](Sw, xs):\n")
     write(io, "DJ := (-1)^(Rank(N))*Determinant(J):\n")
+end
+
+## It needs Y and E be defined in Maple
+function ConvexparamtoMaple(io)
+    write(io, "\n\ndigL := Matrix(convert(E.(Vector[column]([seq(lambda[i], i=1..LinearAlgebra[ColumnDimension](E))])), Vector[row]), shape = diagonal):\n")
+    write(io, "digH := DiagonalMatrix([seq(h[i], i = 1..LinearAlgebra[ColumnDimension](LinearAlgebra[Transpose](Y)))]):\n")
+    write(io, "Jconv := N.digL.LinearAlgebra[Transpose](Y).digH:\n")
 end
 
 function toMaple(net, nxs, file::String)
@@ -82,5 +89,6 @@ function toMaple(net, nxs, file::String)
         kstoMaple(io, stoichiometricsources(S))
         systemtoMaple(io)
         WsystemtoMaple(io, nts, W)
+        ConvexparamtoMaple(io)
     end
 end
