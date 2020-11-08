@@ -1,0 +1,8 @@
+
+
+* Design conventions
+- The name of functions returning a function must end with 'of'
+- Functions receiving arrays must recive Julia arrays and ones returning arrays, must return Julia arrays.
+  We work in Julia, we use external tools to compute things, but we work in Julia.
+  To esay interaction, functions eating or returning arrays must do it with Julia arrays.
+
