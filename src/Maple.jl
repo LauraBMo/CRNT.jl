@@ -16,9 +16,8 @@ function matrixtoMaple(io, M, name)
 end
 
 macro matrixtoMaple(io, M)
-    str = string(M)
     return quote
-        matrixtoMaple($io, $M, $str)
+        matrixtoMaple($(esc(io)), $(esc(M)), $(esc((string(M)))))
     end
 end
 
