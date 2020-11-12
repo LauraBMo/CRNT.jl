@@ -46,6 +46,27 @@ filter_complex(A, rtol) = real.(filter(isrealof(rtol), A))
 filter_negative(A) = filter(isnegative, A)
 # filter_positiveorthant(A, rtol) = filternegative(filtercomplex(A, rtol))
 
+ispositive(x) = x>zero(x)
+isnegative(x) = x<zero(x)
+
+isnonnegative(x) = !(isnegative(x))
+isnonpositive(x) = !(ispositive(x))
+
+function getcoeff(term::Tuple{T,S}) where {T,S}
+    return term[1]
+end
+
+function getexponent(term::Tuple{T,S}) where {T,S}
+    return term[2]
+end
+
+function filterterms(predicate, p::MPolyElem)
+	return Iterators.filter(predicate, dissect(p))
+end
+
+function findallcoeffs(predicate, p::MPolyElem)
+    return findall(predicate, collect(coeffs(p)))
+end
 
 ###############################################################################
 #                             Array manipulations                             #
