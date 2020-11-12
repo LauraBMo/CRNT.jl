@@ -255,18 +255,6 @@ end
 
 function collectnonnegativevertices(p::MPolyElem)
     return collectnonnegativevertices(p, verticesofNewtonpolytope(p))
->>>>>>> variant B
-julia> Collectallrows(x->Nemo.isless(x,0), q, V)
-2-element Array{Array{Int64,1},1}:
- [1, 0, 1, 0, 2, 0, 0, 0, 0]
- [0, 0, 1, 0, 0, 0, 0, 1, 0]
-```
-"""
-function Collectallrows(predicate, p::MPolyElem, V::AbstractMatrix)
-    predisinV(x) = predicate(x[1]) && x[2] in eachrow(V)
-    getexponent(x) = x[2]
-    return getexponent.(Iterators.filter(predisinV, zip(coeffs(p), exponent_vectors(p))))
-======= end
 end
 
 function Findallrows(predicate, p::MPolyElem, V::AbstractMatrix)
