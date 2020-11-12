@@ -1,6 +1,5 @@
 
-export
-    StoichiometricCoeffs,
+export StoichiometricCoeffs,
     StoichiometricSources,
     StoichiometricTargets,
     StoichiometricMatrix,
@@ -13,18 +12,65 @@ export
     SpeciesformationRings,
     trivialConservativeLaws
 
+
+function stoichiometricsources(net::AbstractMatrix, xs::AbstractVector, getcoefficient)
+    return Int.([getcoefficient(p, x) for x in xs, p in net[:,1]])
+end
+
+function stoichiometrictargets(net::AbstractMatrix, xs::AbstractVector, getcoefficient)
+    return Int.([getcoefficient(p, x) for x in xs, p in net[:,2]])
+end
+
+function stoichiometriccoeffs(net::AbstractMatrix, xs::AbstractVector, getcoefficient)
+    return hcat(stoichiometricsources(net, xs, getcoefficient), stoichiometrictargets(net, xs, getcoefficient))
+end
+
+function stoichiometriccoeffs(net::AbstractMatrix{T}, xs::AbstractVector) where {T <: RingElem}
+    return hcat(stoichiometricsources(net, xs, Nemo.coeff), stoichiometrictargets(net, xs, Nemo.coeff))
+end
+
+function stoichiometriccoeffs(net::AbstractMatrix, xs::AbstractVector)
+    R = parent(xs[1])
+    return stoichiometriccoeffs(R.(net), xs)
+end
+
+function stoichiometricsources(net::AbstractMatrix)
+    return net[:,1:div(end, 2)]
+end
+
+function stoichiometrictargets(net::AbstractMatrix)
+    return net[:,div(end, 2) + 1:end]
+end
+
+# Matrix Y
+function kineticorder(net::AbstractMatrix)
+    return dropzeroslices(stoichiometricsources(net))
+end
+
+# Matrix N
+function stoichiometricmatrix(net::AbstractMatrix)
+    return dropzeroslices(stoichiometrictargets(net) - stoichiometricsources(net))
+end
+
+function conservativelaws(N::AbstractMatrix{T}) where {T <: Integer}
+    Nnemo = matrix(FlintIntegerRing(), N)
+    nTs, W = left_kernel(Nnemo)
+    W = hnf(W)
+    return nTs, T.(Array(W))
+end
+
 # Matrix Y
 function StoichiometricCoeffs(net::AbstractMatrix, xs::AbstractVector, getcoefficient=Nemo.coeff)
-    return Int.(hcat([getcoefficient(p,x) for x in xs, p in net[:,1]],
-                     [getcoefficient(p,x) for x in xs, p in net[:,2]]))
+    return Int.(hcat([getcoefficient(p, x) for x in xs, p in net[:,1]],
+                     [getcoefficient(p, x) for x in xs, p in net[:,2]]))
 end
 
 function StoichiometricSources(Y::AbstractMatrix)
-    return Y[:,1:div(end,2)]
+    return Y[:,1:div(end, 2)]
 end
 
 function StoichiometricTargets(Y::AbstractMatrix)
-    return Y[:,div(end,2)+1:end]
+    return Y[:,div(end, 2) + 1:end]
 end
 
 # Matrix N
@@ -34,12 +80,11 @@ end
 
 ##########################
 ##########################
-##########################
 ######## W
 ########
 
-function trivialConservativeLaws(N::AbstractMatrix{T}) where {T<:Integer}
-    nTs, W = left_kernel(matrix(FlintIntegerRing(),N))
+function trivialConservativeLaws(N::AbstractMatrix{T}) where {T <: Integer}
+    nTs, W = left_kernel(matrix(FlintIntegerRing(), N))
     return nTs, Int.(Array(hnf(W)))
 end
 
@@ -61,11 +106,11 @@ function Velocity(R::MPolyRing, v::AbstractVector)
 end
 
 function Velocities(R::MPolyRing)
-    return v->Velocity(R, v)
+    return v -> Velocity(R, v)
 end
 
 function columns(A::AbstractMatrix)
-    return [A[:, i] for i in 1:size(A,2)]
+    return [A[:, i] for i in 1:size(A, 2)]
 end
 
 function VectorVelocities(R::MPolyRing, Y::AbstractMatrix)
@@ -90,26 +135,16 @@ function Speciesformationrate(Rx::MPolyRing, Rk::MPolyRing,
                               N::AbstractMatrix, Y::AbstractMatrix)
     V = VectorVelocities(Rx, Y)
     K = Diagonal(gens(Rk))
-    return N*K*V
-end
-
-isnonzero(x) = (x)!=(zero(typeof(x)))
-
-function findfirstnonzero(r)
-    return findfirst(isnonzero,r)
-end
-
-function findpivots(W::AbstractMatrix)
-    return findfirstnonzero.(eachrow(W))
+    return N * K * V
 end
 
 function SpeciesformationrateInStclass!(f::AbstractVector,
                                         R::MPolyRing,
                                         W::AbstractMatrix,
-                                        xs::UnitRange{T}=1:size(W,2),
-                                        ts::UnitRange{T}=.+(length(xs),1:size(W,1))) where {T<:Integer}
-    Wx = W*gens(R)[xs] - gens(R)[ts]
-    for (i,p) in enumerate(findpivots(W))
+                                        xs::UnitRange{T}=1:size(W, 2),
+                                        ts::UnitRange{T}=.+(length(xs), 1:size(W, 1))) where {T <: Integer}
+    Wx = W * gens(R)[xs] - gens(R)[ts]
+    for (i, p) in enumerate(findpivots(W))
         f[p] = Wx[i]
     end
     return f
@@ -118,8 +153,8 @@ end
 function SpeciesformationrateInStclass(f::AbstractVector,
                                        R::MPolyRing,
                                        W::AbstractMatrix,
-                                       xs::UnitRange{T}=1:size(W,2),
-                                       ts::UnitRange{T}=.+(length(xs),1:size(W,1))) where {T<:Integer}
+                                       xs::UnitRange{T}=1:size(W, 2),
+                                       ts::UnitRange{T}=.+(length(xs), 1:size(W, 1))) where {T <: Integer}
     F = f
     return SpeciesformationrateInStclass!(F, R, W, xs, ts)
 end
@@ -128,3 +163,4 @@ function SystemF(net, nxs)
     Y = StoichiometricCoeffs(net, nxs)
     Ys = StoichiometricSources(Y)
     N = StoichiometricMatrix(Y)
+end

@@ -1,4 +1,18 @@
-export Diagonal, Jacobian
+
+export dissect,
+    Diagonal,
+    partialdervativeof,
+    Jacobian
+
+@doc raw"""
+    dissect(p::MPolyElem)
+
+Iterator for the coefficients and exponent vectors of the given polynomial.
+
+"""
+function dissect(p::MPolyElem)
+    return zip(coeffs(p), exponent_vectors(p))
+end
 
 """
 
@@ -7,7 +21,7 @@ export Diagonal, Jacobian
 Given a Julia vector `V` of entries, construct the corresponding AbstractAlgebra.jl one-column matrix over the given ring `R`, assuming all the entries can be coerced into `R`.
 """
 function Nemo.matrix(R::AbstractAlgebra.Ring, V::AbstractVector)
-    return Nemo.matrix(R, reshape(V, (:,1)))
+    return Nemo.matrix(R, reshape(V, (:, 1)))
 end
 
 
@@ -18,14 +32,14 @@ end
 Given a Julia vector `V` of entries, construct the corresponding AbstractAlgebra.jl diagonal matrix over the given ring `R`, assuming all the entries can be coerced into `R`.
 """
 function Diagonal(R::AbstractAlgebra.Ring, V::AbstractVector{T}) where {T}
-    n = size(V,1)
-    D = Nemo.zero_matrix(R,n,n)
+    n = size(V, 1)
+    D = Nemo.zero_matrix(R, n, n)
     for i in 1:n D[i,i] = V[i] end
     return D
 end
 
-function partialderivative(i::Integer)
-    return p -> derivative(p,i)
+function partialdervativeof(i::Integer)
+    return p -> Nemo.derivative(p, i)
 end
 
 """
@@ -55,11 +69,11 @@ julia> Jacobian(R,M)
 ```
 """
 function Jacobian(R::MPolyRing, M::AbstractVector, vars=1:length(gens(R)))
-    rows = size(M,1)
+    rows = size(M, 1)
     cols = length(vars)
     J = fill(zero(R), rows, cols)
     for j in 1:cols
-        J[:,j] = partialderivative(vars[j]).(M)
+        J[:,j] = partialdervativeof(vars[j]).(M)
     end
     return J
 end
