@@ -78,23 +78,23 @@ julia> collect(homoexponent_vectors(p))
 """
 homoexponent_vectors(p::MPolyElem) = homogenize(exponent_vectors(p))
 
-function collect_homoiter(iter)
-    ## First iteration outside the loop to prealocate v
-    (u, state) = iterate(iter)
-    ## Prealocate v
-    v = ones(eltype(u), size(u,1)+1, length(iter))
-    # v = Matrix{eltype(u)}(undef, size(u,1)+1, length(iter))
-    # v[1,:] .= one(eltype(u))
-    v[2:end,1] = u
-    next = iterate(iter, state)
-    ## Start the loop
-    while next !== nothing
-        (u, state) = next
-        v[2:end,state-1] = u
-        next = iterate(iter, state)
-    end
-    return transpose(v)
-end
+# function collect_homoiter(iter)
+#     ## First iteration outside the loop to prealocate v
+#     (u, state) = iterate(iter)
+#     ## Prealocate v
+#     v = ones(eltype(u), size(u,1)+1, length(iter))
+#     # v = Matrix{eltype(u)}(undef, size(u,1)+1, length(iter))
+#     # v[1,:] .= one(eltype(u))
+#     v[2:end,1] = u
+#     next = iterate(iter, state)
+#     ## Start the loop
+#     while next !== nothing
+#         (u, state) = next
+#         v[2:end,state-1] = u
+#         next = iterate(iter, state)
+#     end
+#     return transpose(v)
+# end
 
 """
     CollectExponent_homovectors(p::MPolyElem)
@@ -124,59 +124,116 @@ julia> CollectExponent_homovectors(q)
 Recall it is approximately ten times faster than the equivalent
     transpose(reduce(hcat,collect(exponent_homovectors(q))))
 """
-function CollectExponent_homovectors(p)
-    ## Save the iterator (this function just works for iters whose states are Int and start at ZERO)
+function matrix_homoexponent_vectors(p::MPolyElem)
     iter = exponent_vectors(p)
     ## First iteration outside the loop to prealocate v
     (u, state) = iterate(iter)
     ## Prealocate v
-    v = ones(eltype(u), size(u,1)+1, length(iter))
+    v = ones(eltype(u), length(iter), size(u,1)+1)
     # v = Matrix{eltype(u)}(undef, size(u,1)+1, length(iter))
     # v[1,:] .= one(eltype(u))
-    v[2:end,1] = u
+    v[1,2:end] = u
     next = iterate(iter, state)
     ## Start the loop
     while next !== nothing
         (u, state) = next
-        v[2:end,state] = u
+        v[state,2:end] = u
         next = iterate(iter, state)
     end
-    return transpose(v)
+    return v
 end
 
-"""
-    Collectallrows(predicate, p::MPolyElem, V::AbstractMatrix)
 
-Returns an `Array` of all the exponents of terms of `p` for which the exponent is a row of `V` and the coefficient satisfies `predicate`.
+# """
+#     Collectallrows(predicate, p::MPolyElem, V::AbstractMatrix)
 
-# Examples
-```jldoctest; setup = :(using CRNT)
-julia> using Nemo
+# Returns an `Array` of all the exponents of terms of `p` for which the exponent is a row of `V` and the coefficient satisfies `predicate`.
 
-julia> R, vars = PolynomialRing(ZZ, vcat(["k\$i" for i in 1:5], ["x\$i" for i in 1:4]));
+# # Examples
+# ```jldoctest; setup = :(using CRNT)
+# julia> using Nemo
 
-julia> q = vars[1]*vars[2]*vars[6]-vars[3]*vars[8]+vars[5]*vars[9]-2*vars[1]*vars[3]*vars[5]^2
-k1*k2*x1-2*k1*k3*k5^2-k3*x3+k5*x4
+# julia> R, vars = PolynomialRing(ZZ, vcat(["k\$i" for i in 1:5], ["x\$i" for i in 1:4]));
 
-julia> collect(exponent_vectors(q))
-4-element Array{Array{Int64,1},1}:
- [1, 1, 0, 0, 0, 1, 0, 0, 0]
- [1, 0, 1, 0, 2, 0, 0, 0, 0]
- [0, 0, 1, 0, 0, 0, 0, 1, 0]
- [0, 0, 0, 0, 1, 0, 0, 0, 1]
+# julia> q = vars[1]*vars[2]*vars[6]-vars[3]*vars[8]+vars[5]*vars[9]-2*vars[1]*vars[3]*vars[5]^2
+# k1*k2*x1-2*k1*k3*k5^2-k3*x3+k5*x4
 
-julia> V =  [[1 1 0 0 0 1 0 0 0]; [0 0 1 0 0 0 0 1 0]; [1 0 1 0 2 0 0 0 0]];
+# julia> collect(exponent_vectors(q))
+# 4-element Array{Array{Int64,1},1}:
+#  [1, 1, 0, 0, 0, 1, 0, 0, 0]
+#  [1, 0, 1, 0, 2, 0, 0, 0, 0]
+#  [0, 0, 1, 0, 0, 0, 0, 1, 0]
+#  [0, 0, 0, 0, 1, 0, 0, 0, 1]
 
-julia> Collectallrows(x->Nemo.isless(x,0), q, V)
-2-element Array{Array{Int64,1},1}:
- [1, 0, 1, 0, 2, 0, 0, 0, 0]
- [0, 0, 1, 0, 0, 0, 0, 1, 0]
-```
-"""
-function Collectallrows(predicate, p::MPolyElem, V::AbstractMatrix)
-    predisinV(x) = predicate(x[1]) && x[2] in eachrow(V)
-    getexponent(x) = x[2]
-    return getexponent.(Iterators.filter(predisinV, zip(coeffs(p),exponent_vectors(p))))
+# julia> V =  [[1 1 0 0 0 1 0 0 0]; [0 0 1 0 0 0 0 1 0]; [1 0 1 0 2 0 0 0 0]];
+
+# julia> Collectallrows(x->Nemo.isless(x,0), q, V)
+# 2-element Array{Array{Int64,1},1}:
+#  [1, 0, 1, 0, 2, 0, 0, 0, 0]
+#  [0, 0, 1, 0, 0, 0, 0, 1, 0]
+# ```
+# """
+
+## Optmized functions to find which rows in matrix vertices correspond to pos/neg/nonpos/nonneg exponents
+function collect_coefffiltred_exponent_vectors(predicate, p::MPolyElem)
+    return [iterate(exponent_vectors(p),n-1)[1] for n in findallcoeffs(predicate, p)]
+end
+
+function findallpositivevertices(p::MPolyElem, vertices::AbstractMatrix)
+    return findall(in(collect_coefffiltred_exponent_vectors(ispositive, p)), collect(eachrow(vertices)))
+end
+
+function findallnegativevertices(p::MPolyElem, vertices::AbstractMatrix)
+    return findall(in(collect_coefffiltred_exponent_vectors(isnegative, p)), collect(eachrow(vertices)))
+end
+
+function findallnonpositivevertices(p::MPolyElem, vertices::AbstractMatrix)
+    return findall(in(collect_coefffiltred_exponent_vectors(isnonpositive, p)), collect(eachrow(vertices)))
+end
+
+function findallnonnegativevertices(p::MPolyElem, vertices::AbstractMatrix)
+    return findall(in(collect_coefffiltred_exponent_vectors(isnonnegative, p)), collect(eachrow(vertices)))
+end
+
+## Optimized functions to collect rows of matrix vertices correspond to pos/neg/nonpos/nonneg exponents
+function collect_termfiltred_exponent_vectors(predicate, p::MPolyElem)
+    return getexponent.(filterterms(predicate, p))
+end
+
+function isours(predicate, vertices)
+    return term -> predicate(getcoeff(term)) && getexponent(term) in eachrow(vertices)
+end
+
+function collectpositivevertices(p::MPolyElem, vertices::AbstractMatrix)
+    return collect_termfiltred_exponent_vectors(isours(ispositive, vertices), p)
+end
+
+function collectnegativevertices(p::MPolyElem, vertices::AbstractMatrix)
+    return collect_termfiltred_exponent_vectors(isours(isnegative, vertices), p)
+end
+
+function collectnonpositivevertices(p::MPolyElem, vertices::AbstractMatrix)
+    return collect_termfiltred_exponent_vectors(isours(isnonpositive, vertices), p)
+end
+
+function collectnonnegativevertices(p::MPolyElem, vertices::AbstractMatrix)
+    return collect_termfiltred_exponent_vectors(isours(isnonnegative, vertices), p)
+end
+
+function collectpositivevertices(p::MPolyElem)
+    return collectpositivevertices(p, verticesofNewtonpolytope(p))
+end
+
+function collectnegativevertices(p::MPolyElem)
+    return collectnegativevertices(p, verticesofNewtonpolytope(p))
+end
+
+function collectnonpositivevertices(p::MPolyElem)
+    return collectnonpositivevertices(p, verticesofNewtonpolytope(p))
+end
+
+function collectnonnegativevertices(p::MPolyElem)
+    return collectnonnegativevertices(p, verticesofNewtonpolytope(p))
 end
 
 function Findallrows(predicate, p::MPolyElem, V::AbstractMatrix)
