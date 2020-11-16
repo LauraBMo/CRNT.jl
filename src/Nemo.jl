@@ -14,6 +14,12 @@ function dissect(p::MPolyElem)
     return zip(coeffs(p), exponent_vectors(p))
 end
 
+function Nemo.nullspace_right_rational(N::AbstractArray{T}) where {T<:Integer}
+    Nnemo = Nemo.matrix(Nemo.FlintZZ, N)
+    r, U = Nemo.nullspace_right_rational(Nnemo)
+    return convert_to_array(U[:,1:r],T(1))
+end
+
 """
 
     matrix(R, V::AbstractVector{T}) where {T}
