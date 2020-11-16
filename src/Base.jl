@@ -70,3 +70,13 @@ function dropzeroslices(A)
     indeces = nonzeroslicesof(A).(1:ndims(A))
     return A[indeces...]
 end
+
+"""
+
+    integermultiple(A)
+
+Given an array of rational numbers 'A', returns a multiple 'λA' with integer entries, where 'λ' is the minimal integer with this property.
+"""
+function integermultiple(A)
+    return Int.(abs(lcm(denominator.(A))) .* A)
+end
