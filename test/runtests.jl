@@ -3,8 +3,8 @@ using Test
 using Nemo
 
 @testset "Cones.jl" begin
-    @test cone_positivenullspace([0 0; 0 0]) == [1 0; 0 1]
-    @test cone_positivenullspace([1 -1; 2 -2]) == transpose([1 1])
+    @test raysof(cone_positivenullspace([0 0; 0 0])) == [1 0; 0 1]
+    @test raysof(cone_positivenullspace([1 -1; 2 -2])) == transpose([1 1])
 end
 
 @testset "Base.jl" begin
