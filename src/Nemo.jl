@@ -25,7 +25,7 @@ function Nemo.matrix(R::AbstractAlgebra.Ring, V::AbstractVector)
 end
 
 
-"""
+@doc raw"""
 
     Diagonal(R, V::AbstractVector{T}) where {T}
 

@@ -59,36 +59,6 @@ function conservativelaws(N::AbstractMatrix{T}) where {T <: Integer}
     return nTs, T.(Array(W))
 end
 
-# Matrix Y
-function StoichiometricCoeffs(net::AbstractMatrix, xs::AbstractVector, getcoefficient=Nemo.coeff)
-    return Int.(hcat([getcoefficient(p, x) for x in xs, p in net[:,1]],
-                     [getcoefficient(p, x) for x in xs, p in net[:,2]]))
-end
-
-function StoichiometricSources(Y::AbstractMatrix)
-    return Y[:,1:div(end, 2)]
-end
-
-function StoichiometricTargets(Y::AbstractMatrix)
-    return Y[:,div(end, 2) + 1:end]
-end
-
-# Matrix N
-function StoichiometricMatrix(Y::AbstractMatrix)
-    return StoichiometricTargets(Y) - StoichiometricSources(Y)
-end
-
-##########################
-##########################
-######## W
-########
-
-function trivialConservativeLaws(N::AbstractMatrix{T}) where {T <: Integer}
-    nTs, W = left_kernel(matrix(FlintIntegerRing(), N))
-    return nTs, Int.(Array(hnf(W)))
-end
-
-
 ##############################################
 ##############################################
 ##############################################

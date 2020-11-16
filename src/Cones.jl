@@ -99,9 +99,9 @@ function pRoots_qPossitive(p, q, nattemps::Integer=10, randbound::Integer=50)
     #     end
     for i in posVq
         println("Computing cone to the $(i)th positive vertex of q\n")
-        c1 = Polymake.polytope.normal_cone(NPq, i-1, outer=1)
+        c1 = Polymake.polytope.normal_cone(NPq, i - 1, outer=1)
         for (nc2, c2) in enumerate(Conesp)
-            rays = Polymake.polytope.intersection(c1,c2).RAYS
+            rays = Polymake.polytope.intersection(c1, c2).RAYS
             r = size(rays, 1)
             if r > 0
                 println("Intersecting cones found :)")
@@ -112,7 +112,7 @@ function pRoots_qPossitive(p, q, nattemps::Integer=10, randbound::Integer=50)
                 qvals = [Float64(evaluate(q, (Nemo.fmpq).(pt))) for pt in proots]
                 if findfirst(>(0), qvals) == nothing
                     j = 1;
-                    while !found && j<nattemps
+                    while !found && j < nattemps
                         j += 1
                         println("Computing point in cone\n")
                         point = IntPointIncone(rays, rand(1:randbound, 1, r))
@@ -148,23 +148,23 @@ end
 
 function pRoots_qPossitive(p, NPp, VNPp, q, NPq, VNPq, nattemps::Integer=10, randbound::Integer=50)
     println("Finding negative/possitive vertices\n")
-    isneg(x) = x<0
-    ispos(x) = 0<x
+    isneg(x) = x < 0
+    ispos(x) = 0 < x
     negVp = Findallrows(isneg, p, VNPp)
     posVq = Findallrows(ispos, q, VNPq)
     println("Computing cones to negative vertices of p\n")
-    Conesp = [Polymake.polytope.normal_cone(NPp, v-1, outer=1) for v in negVp]
+    Conesp = [Polymake.polytope.normal_cone(NPp, v - 1, outer=1) for v in negVp]
     Listpt = []
     for i in posVq
         print("==============================================\n")
         print("==============================================\n")
         println("Computing the cone to the $(i)th positive vertex of q\n")
-        c1 = Polymake.polytope.normal_cone(P, i-1, outer=1)
+        c1 = Polymake.polytope.normal_cone(P, i - 1, outer=1)
         for (nc2, c2) in enumerate(Conesp)
             # print("==============================================\n")
             # print("==============================================\n")
             # println("Intersecting the $(nc2) first cone and the $i second\n")
-            rays = Polymake.polytope.intersection(c1,c2).RAYS
+            rays = Polymake.polytope.intersection(c1, c2).RAYS
             r = size(rays, 1)
             if r > 0
                 # println("Intersecting cones found :)")
@@ -180,7 +180,7 @@ function pRoots_qPossitive(p, NPp, VNPp, q, NPq, VNPq, nattemps::Integer=10, ran
                 found = findfirst(>(0), qvals) != nothing
                 if !found
                     j = 1;
-                    while !found && j<nattemps
+                    while !found && j < nattemps
                         j += 1
                         # println("Computing point in cone (rand coeffs, attempt $j)\n")
                         point = IntPointIncone(rays, rand(1:randbound, 1, r))

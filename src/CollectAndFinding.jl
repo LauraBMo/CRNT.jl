@@ -55,8 +55,6 @@ Base.@propagate_inbounds function Base.iterate(h::Homogenize)
     return pushfirst!(Vector(n[1]), oneunit(Base.eltype(n[1]))), n[2]
 end
 
-
-
 """
     homoexponent_vectors(p::MPolyElem)
 
