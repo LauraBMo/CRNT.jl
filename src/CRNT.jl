@@ -4,7 +4,7 @@ module CRNT
 using Nemo # matrix, FlintIntegerRing, nullspace
 import AbstractAlgebra
 import Polymake # polytope.cone,intersection
-import LinearAlgebra: I, dot, Diagonal
+import LinearAlgebra: I, dot, Diagonal, transpose
 import PolynomialRoots
 
 
