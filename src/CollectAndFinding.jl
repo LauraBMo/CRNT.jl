@@ -240,19 +240,19 @@ function collectnonnegativevertices(p::MPolyElem, vertices::AbstractMatrix)
 end
 
 function collectpositivevertices(p::MPolyElem)
-    return collectpositivevertices(p, verticesofNewtonpolytope(p))
+    return collectpositivevertices(p, verticesof(Newtonpolytope(p)))
 end
 
 function collectnegativevertices(p::MPolyElem)
-    return collectnegativevertices(p, verticesofNewtonpolytope(p))
+    return collectnegativevertices(p, verticesof(Newtonpolytope(p)))
 end
 
 function collectnonpositivevertices(p::MPolyElem)
-    return collectnonpositivevertices(p, verticesofNewtonpolytope(p))
+    return collectnonpositivevertices(p, verticesof(Newtonpolytope(p)))
 end
 
 function collectnonnegativevertices(p::MPolyElem)
-    return collectnonnegativevertices(p, verticesofNewtonpolytope(p))
+    return collectnonnegativevertices(p, verticesof(Newtonpolytope(p)))
 end
 
 function Findallrows(predicate, p::MPolyElem, V::AbstractMatrix)
