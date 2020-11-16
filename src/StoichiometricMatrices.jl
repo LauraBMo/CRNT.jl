@@ -1,17 +1,21 @@
 
-export StoichiometricCoeffs,
-    StoichiometricSources,
-    StoichiometricTargets,
-    StoichiometricMatrix,
+export stoichiometriccoeffs,
+    stoichiometricsources,
+    stoichiometrictargets,
+    kineticorder,
+    stoichiometricmatrix,
+    conservativelaws,
     Velocity,
     Velocities,
+    columns,
     VectorVelocities,
-    Speciesformationrate,
     SpeciesformationTotalRing,
     SpeciesformationKsRing,
     SpeciesformationRings,
-    trivialConservativeLaws
-
+    Speciesformationrate,
+    SpeciesformationrateInStclass!,
+    SpeciesformationrateInStclass,
+    SystemF
 
 function stoichiometricsources(net::AbstractMatrix, xs::AbstractVector, getcoefficient)
     return Int.([getcoefficient(p, x) for x in xs, p in net[:,1]])

@@ -1,3 +1,17 @@
+
+export convert_to_array,
+    anynonzero,
+    isrealof,
+    isnegative,
+    filter_complex,
+    filter_negative,
+    findfirstnonzero,
+    findpivotsof,
+    nonzeroslicesof,
+    dropzeroslices,
+    integermultiple
+
+
 ###############################################################################
 #                             Types compatibilites                            #
 ###############################################################################

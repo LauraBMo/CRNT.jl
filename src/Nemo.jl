@@ -1,10 +1,12 @@
 
-export dissect,
+export
+    dissect,
     Diagonal,
     partialdervativeof,
     Jacobian
 
 @doc raw"""
+
     dissect(p::MPolyElem)
 
 Iterator for the coefficients and exponent vectors of the given polynomial.

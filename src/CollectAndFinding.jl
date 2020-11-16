@@ -5,10 +5,13 @@ export homogenize,
     pushfirst_sliceofones,
     Collectallrows,
     Findallrows,
+    Collectallcols,
+    Findallcols,
     texponents,
     tcoeffs,
     realpositiveroots,
     tevalof,
+    teval,
     tpointof,
     collect_realpositiveroots
 

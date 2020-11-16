@@ -4,8 +4,11 @@ export
     cone_vectorspace,
     cone_positivenullspace,
     Newtonpolytope,
-    NewtonpolytopeVertices,
-    IntPointIncone,
+    verticesof,
+    raysof,
+    linearcombination,
+    rays_outernormalcone,
+    findnegativepoint,
     printfound,
     pRoots_qPossitive
 
