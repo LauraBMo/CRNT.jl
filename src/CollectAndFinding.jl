@@ -180,6 +180,18 @@ function Findallrows(predicate, p::MPolyElem, V::AbstractMatrix)
     return findall(in(predexp), collect(eachrow(V)))
 end
 
+function Collectallcols(predicate, p::MPolyElem, V::AbstractMatrix)
+    predisinV(x) = predicate(x[1]) && x[2] in eachcol(V)
+    getexponent(x) = x[2]
+    return getexponent.(Iterators.filter(predisinV, zip(coeffs(p), exponent_vectors(p))))
+end
+
+function Findallcols(predicate, p::MPolyElem, V::AbstractMatrix)
+    predexpposs = findall(predicate, collect(coeffs(p)))
+    predexp = [iterate(exponent_vectors(p), n - 1)[1] for n in predexpposs]
+    return findall(in(predexp), collect(eachcol(V)))
+end
+
 # getcoeff(x) = x[1]
 # isnegative(x) = x < 0
 # iscoeffnegative(x) = isnegative(getcoeff(x))
