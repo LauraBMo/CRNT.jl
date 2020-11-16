@@ -232,11 +232,11 @@ function tevalof(p::MPolyElem, texps, T=Float64)
 end
 
 function tevalof(polyn::AbstractVector{T}) where {T <: AbstractFloat}
-    return t -> sum([T(c) * (t^i) for (i, c) in enumerate(polyn)])
+    return t -> sum([T(c) * (t^(i - 1)) for (i, c) in enumerate(polyn)])
 end
 
 function teval(p::MPolyElem, point::AbstractVector{T}) where {T <: AbstractFloat}
-    return sum([T(c) * ((point).^(exp)) for (c, exp) in dissect(p)])
+    return sum([T(c) * prod((point).^(exp)) for (c, exp) in dissect(p)])
 end
 
 function tpointof(texp)
