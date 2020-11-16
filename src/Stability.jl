@@ -69,3 +69,24 @@ function StabilityMatrix(R::AbstractAlgebra.Ring, J, mindeg::Integer=size(J, 1) 
     print("==============================================\n")
     return H
 end
+
+function StabilityMatrix(io, R::AbstractAlgebra.Ring, J, mindeg::Integer=size(J, 1) - rank(J))
+    P, x = PolynomialRing(R, "x")
+    p = divexact(charpoly(P, J), x^mindeg)
+    H = []
+    iter = HurwitzDeterminants(R, p)
+    write(io, "==============================================\n")
+    write(io, "==============================================\n")
+    write(io, "$(length(iter)) expressions will be studied\n")
+    for (i, D) in enumerate(iter)
+        write(io, "\n-- $i th determinant --\n")
+        signs = unique(sign.(coeffs(D)))
+        write(io, "$(signs)\n")
+        if -1 in signs
+            H = [H; D]
+        end
+    end
+    write(io, "==============================================\n")
+    write(io, "==============================================\n")
+    return H
+end
