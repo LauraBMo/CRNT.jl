@@ -54,7 +54,6 @@ end
 anynonzero(A) = any((!iszero).(A))
 
 isrealof(rtol) = z -> abs(imag(z)) < rtol #
-isnegative(x) = (x) < zero(x)
 
 filter_complex(A, rtol) = real.(filter(isrealof(rtol), A))
 filter_negative(A) = filter(isnegative, A)

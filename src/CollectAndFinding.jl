@@ -158,9 +158,6 @@ end
 
 
 # R, vars = PolynomialRing(ZZ, vcat(["k$i" for i in 1:5], ["x$i" for i in 1:4]));
-"""
-    Collectallrows(predicate, p::MPolyElem, V::AbstractMatrix)
-
 # """
 #     Collectallrows(predicate, p::MPolyElem, V::AbstractMatrix)
 
