@@ -58,13 +58,13 @@ function Newtonpolytope(p)
 end
 
 function verticesof(polyt, polytname="")
-    length(polytname) > 0 && println("Computing vertices of $(polytname), it may take some time.\n")
+    length(polytname) > 0 && print("Computing vertices of $(polytname), it may take some time.\n")
     return convert_to_array(polyt.VERTICES[:,2:end])
 end
 
 function raysof(cone, conename="")
-    length(conename) > 0 && println("Computing vertices of $(conename), it may take some time.\n")
-    return convert_to_array(cone.RAYS)
+    length(conename) > 0 && print("Computing rays of $(conename), it may take some time.\n")
+    return Array(cone.RAYS)
 end
 
 ## Input:  polytope P, vertex v::Int.
