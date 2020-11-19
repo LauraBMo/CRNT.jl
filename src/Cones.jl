@@ -64,7 +64,7 @@ end
 
 function raysof(cone, conename="")
     length(conename) > 0 && print("Computing rays of $(conename), it may take some time.\n")
-    return Array(cone.RAYS)
+    return Rational.(transpose(Array(cone.RAYS)))
 end
 
 ## Input:  polytope P, vertex v::Int.
@@ -75,7 +75,7 @@ end
 
 function rays_outernormalcone(polyt, vertex)
     cone = Polymake.polytope.normal_cone(polyt, vertex - 1, outer=1)
-    return convert_to_array(cone.RAYS, Rational(1))
+    return raysof(cone)
 end
 
 function findnegativepoint(p)
@@ -113,7 +113,7 @@ function pRoots_qPossitive(p, q, nattemps::Integer=10, randbound::Integer=50)
         println("Computing cone to the $(i)th positive vertex of q\n")
         c1 = Polymake.polytope.normal_cone(NPq, i - 1, outer=1)
         for (nc2, c2) in enumerate(Conesp)
-            rays = Polymake.polytope.intersection(c1, c2).RAYS
+            rays = raysof(Polymake.polytope.intersection(c1, c2))
             r = size(rays, 1)
             if r > 0
                 println("Intersecting cones found :)")
@@ -176,7 +176,7 @@ function pRoots_qPossitive(p, NPp, VNPp, q, NPq, VNPq, nattemps::Integer=10, ran
             # print("==============================================\n")
             # print("==============================================\n")
             # println("Intersecting the $(nc2) first cone and the $i second\n")
-            rays = Polymake.polytope.intersection(c1, c2).RAYS
+            rays = raysof(Polymake.polytope.intersection(c1, c2))
             r = size(rays, 1)
             if r > 0
                 # println("Intersecting cones found :)")
