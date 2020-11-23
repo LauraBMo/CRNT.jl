@@ -75,7 +75,7 @@ end
 
 function rays_outernormalcone(polyt, vertex)
     cone = Polymake.polytope.normal_cone(polyt, vertex - 1, outer=1)
-    return convert_to_array(cone.RAYS, Rational(1))
+    return raysof(cone)
 end
 
 function findnegativepoint(p)
