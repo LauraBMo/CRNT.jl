@@ -305,7 +305,7 @@ end
 function realpositiveroots(polyn, rtol::Real=1e-7)
     # poly = evalexponent(p, texp)
     roots = PolynomialRoots.roots(polyn)
-    return filter(isnegative, filter_complex(roots, rtol))
+    return filter(ispositive, filter_complex(roots, rtol))
 end
 
 function tevalof(p::MPolyElem, texps, T=Float64)
