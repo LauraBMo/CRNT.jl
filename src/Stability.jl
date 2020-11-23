@@ -44,6 +44,94 @@ function HurwitzMatrix(R::AbstractAlgebra.Ring, p)
     return M
 end
 
+function evenodd_coeffs(p)
+    l = length(p); ## degree +1
+    ## For the zero polynomial, 'odd' would be a 0-element array
+    if l < 1
+        even = [0]
+        odd  = [0]
+    else
+        even = [coeff(p, i) for i in 0:2:l]
+        odd  = [coeff(p, i) for i in 1:2:l]
+    end
+    return even, odd
+end
+
+function evenodd_polys(p)
+    even, odd = evenodd_coeffs(p)
+    return parent(p)(evalxsqrt(even)), parent(p)(evalxsqrt(odd))
+end
+
+function evalxsqrt(poly)
+    n = size(poly, 1)
+    R = parent(poly[1])
+    out = fill(R(0), 2 * n - 1)
+    out[1] = poly[1]
+    for i in 2:n
+        out[2 * i - 1] = poly[i]
+    end
+    return out
+end
+
+function HurwitzMatrix1(R::AbstractAlgebra.Ring, p)
+    sylvester_matrix(evenodd_polys(p)...)
+end
+
+
+# ## k's are parameters
+# R, (k1, k2) = PolynomialRing(Nemo.QQ, ["k1", "k2"]);
+# RQ = FractionField(R)
+
+# ## The ring for the polynomial system
+# S, (x, y, z, w, t) = PolynomialRing(RQ, ["x", "y", "z", "w", "t"])
+# SQ = FractionField(S)
+
+# ## The ring for the characteristic polynomial.
+# T, l = PolynomialRing(SQ, "A")
+
+# P = T([x * y * k1, k1 * k2^2 + 2, k1, //(k1, k2 + k1 * k2) * x])
+# Q = T([x, y, z, w, t])
+# p, q = evenodd_polys(Q)
+
+# sylvester_matrix(evenodd_polys(p)...)
+# -x * resultant_subresultant(p, q) == det(HurwitzMatrix(S, Q))
+
+# # add_row(a::MatrixElem, s::RingElement, i::Int, j::Int, cols = 1:ncols(a))
+
+# R, (k1, k2, k3) = PolynomialRing(Nemo.QQ, ["k1", "k2", "k3"]);
+# RQ = FractionField(R)
+
+# ## The ring for the polynomial system
+# S, (x, y, z) = PolynomialRing(RQ, ["x", "y", "z"])
+
+# ## The ring for the characteristic polynomial.
+# T, l = PolynomialRing(S, "A")
+
+# chp = T([k1 * k2 * y + k2 * k3 * z + k1 * k3, k2 * y + k2 * z + k1 + k3, S(1)])
+
+# p, q = evenodd_polys(chp)
+# resultant_subresultant(p,q)
+# M = sylvester_matrix(p, q)
+
+# det(M) == resultant_subresultant(p, q)
+
+# det(M) == det(HurwitzMatrix(S, chp))
+
+function ISRO!(M, j)
+    c = ncols(M)
+    p = M[j,j]
+    for i in (j + 1):c
+        if !(iszero(M[i,j]))
+            add_row!(M, M[i,j] // p, j, i, c)
+        end
+    end
+end
+
+function ISRO!(M)
+    return j -> ISRO!(M, j)
+end
+
+
 function HurwitzDeterminants(R::AbstractAlgebra.Ring, p)
     return HurwitzDeterminants(HurwitzMatrix(R, p))
 end
