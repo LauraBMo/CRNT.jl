@@ -328,5 +328,6 @@ function collect_realpositiveroots(p::MPolyElem, texp, rtol::Real=1e-7)
     texps = texponents(p, texp)
     tpoly = tcoeffs(p, texps)
     troots = realpositiveroots(tpoly, rtol)
-    return tpointof(texp).(troots)
+    # return tpointof(texp).(troots)
+    return [texps, tpoly, troots]
 end
