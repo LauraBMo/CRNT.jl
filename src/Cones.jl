@@ -64,7 +64,7 @@ end
 
 function raysof(cone, conename="")
     length(conename) > 0 && print("Computing rays of $(conename), it may take some time.\n")
-    return Int.(Rational.(transpose(Array(cone.RAYS))))
+    return Int.(integermultiple(Rational.(transpose(Array(cone.RAYS)))))
 end
 
 ## Input:  polytope P, vertex v::Int.
