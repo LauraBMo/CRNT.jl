@@ -1,9 +1,20 @@
 
-export homogenize,
+export
+    homogenize,
     homoexponent_vectors,
     collect_homoexponent_vectors,
     pushfirst_sliceofones,
     Collectallrows,
+    collect_coefffiltred_exponent_vectors,
+    findallpositivevertices,
+    findallnegativevertices,
+    findallnonpositivevertices,
+    findallnonnegativevertices,
+    collect_termfiltred_exponent_vectors,
+    collectpositivevertices,
+    collectnegativevertices,
+    collectnonpositivevertices,
+    collectnonnegativevertices,
     Findallrows,
     Collectallcols,
     Findallcols,
@@ -14,6 +25,7 @@ export homogenize,
     teval,
     tpointof,
     collect_realpositiveroots
+
 
 ## Code adapted from "enumarate(iter)"
 struct Homogenize{I}
