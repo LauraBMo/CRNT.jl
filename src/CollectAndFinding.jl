@@ -302,6 +302,18 @@ function tcoeffs(p::MPolyElem, texps)
     return polyn
 end
 
+function tcoeffs(coeffs::AbstractArray, texps)
+    maxdeg = maximum(texps)
+    mindeg = minimum(texps)
+    ## If mindeg>0 we divide by t^(mindeg), otherwise we multiply by it.
+    ## Both correspond to shift by -mindeg!
+    polyn = zeros(maxdeg - mindeg + 1)
+    for (c, i) in zip(coeffs, texps)
+        polyn[i - mindeg + 1] += BigFloat(c)
+    end
+    return polyn
+end
+
 function realpositiveroots(polyn, rtol::Real=1e-7)
     # poly = evalexponent(p, texp)
     roots = PolynomialRoots.roots(polyn)
