@@ -1,4 +1,24 @@
 
+export
+    convert_to_array,
+    anynonzero,
+    isrealof,
+    filter_complex,
+    filter_negative,
+    ispositive,
+    isnegative,
+    isnonnegative,
+    isnonpositive,
+    getcoeff,
+    getexponent,
+    filterterms,
+    findallcoeffs,
+    findfirstnonzero,
+    findpivotsof,
+    nonzeroslicesof,
+    dropzeroslices,
+    integermultiple
+
 export convert_to_array,
     anynonzero,
     isrealof,
@@ -74,7 +94,7 @@ function getexponent(term::Tuple{T,S}) where {T,S}
 end
 
 function filterterms(predicate, p::MPolyElem)
-	return Iterators.filter(predicate, dissect(p))
+    return Iterators.filter(predicate, dissect(p))
 end
 
 function findallcoeffs(predicate, p::MPolyElem)
