@@ -11,7 +11,7 @@ Polymake = "d720cf60-89b5-51f5-aff5-213f193123e7"
 PolynomialRoots = "3a141323-8675-5d76-9d11-e1df1406c778"
 
 [compat]
-AbstractAlgebra = "0.9, 0.10"
+AbstractAlgebra = "0.9, 0.10, 0.12"
 Nemo = "0.17, 0.18"
 Polymake = "0.4, 0.5"
 PolynomialRoots = "1.0"
