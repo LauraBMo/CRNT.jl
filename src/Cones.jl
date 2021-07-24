@@ -1,6 +1,5 @@
 
-export
-    cone_positiveorthant,
+export cone_positiveorthant,
     cone_vectorspace,
     cone_positivenullspace,
     Newtonpolytope,
@@ -77,6 +76,8 @@ function rays_outernormalcone(polyt, vertex)
     cone = Polymake.polytope.normal_cone(polyt, vertex - 1, outer=1)
     return raysof(cone)
 end
+
+rays_outernormalcone(polyt) =  vertex -> rays_outernormalcone(polyt, vertex)
 
 function findnegativepoint(p)
     Newtonp = Newtonpolytope(p)

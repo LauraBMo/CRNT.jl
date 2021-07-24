@@ -169,10 +169,10 @@ function StabilityMatrix(io, R::AbstractAlgebra.Ring, J, mindeg::Integer=size(J,
     for (i, D) in enumerate(iter)
         write(io, "\n-- $i th determinant --\n")
         # signs = unique(sign.(coeffs(D)))
-        signs = unique(sign.(vec(reshape(hcat, coeffs.(coeffs(D))))))
+        signs = unique(sign.(reshape(hcat, coeffs.(coeffs(D)))))
         write(io, "$(signs)\n")
         if -1 in signs
-            H = [H; D]
+            push!(H, D)
         end
     end
     write(io, "==============================================\n")
